@@ -160,10 +160,11 @@ function make(asset_type::Type{ElectricHeating}, data::AbstractDict{Symbol,Any},
         elec_end_node,
     )
 
-    @add_balance(
-        heating_transform,
-        :energy,
-        flow(elec_edge) == get(transform_data, :elec_consumption, 1.0) * flow(heat_edge)
+    heating_transform.balance_data = Dict(
+        :energy => Dict(
+            heat_edge.id => get(transform_data, :elec_consumption, 1.0),
+            elec_edge.id => 1.0,
+        ),
     )
 
     return ElectricHeating(id, heating_transform, heat_edge, elec_edge)

@@ -1,0 +1,45 @@
+{
+  "commodity_transport_with_co2": [
+    {
+      "type": "UpstreamEmissions",
+      "global_data": {
+        "transforms": {
+          "timedata": "IronOre",
+          "constraints": {
+            "BalanceConstraint": true
+          }
+        },
+        "edges": {
+          "fossil_fuel_edge": {
+            "commodity": "IronOre"
+          },
+          "fuel_edge": {
+            "commodity": "IronOre"
+          },
+          "co2_edge": {
+            "commodity": "CO2",
+            "end_vertex": "co2_sink"
+          }
+        }
+      },
+      "instance_data": [
+        {
+          "id": "ironore_transport_co2_Region1Beijing_to_Region2Tianjin",
+          "transforms": {
+            "emission_rate": 0.05,
+            "distance": 100.0
+          },
+          "edges": {
+            "fossil_fuel_edge": {
+              "start_vertex": "ironore_Region1Beijing"
+            },
+            "fuel_edge": {
+              "end_vertex": "ironore_Region2Tianjin",
+              "variable_om_cost": 1.0
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

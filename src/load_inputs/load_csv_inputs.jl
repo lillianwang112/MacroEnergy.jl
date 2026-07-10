@@ -51,20 +51,20 @@ function load_csv_inputs(file_path::AbstractString; rel_path::AbstractString=dir
 end
 
 function validate_csv_data(loaded_csv)::Bool
-    headers = propertynames(loaded_csv)
+    headers = loaded_csv.names
     # headers must be at least 2 columns
     if length(headers) < 2
-        @warn("CSV file must have at least 2 columns: Type and id")
+        @debug("CSV file must have at least 2 columns: type and id")
         return false
     end
-    # The first column must be "Type"
+    # The first column must be "type"
     if headers[1] != :Type
-        @warn("The first column of the CSV file must be 'Type' (got '$(headers[1])')")
+        @debug("The first column of the CSV file must be 'Type'")
         return false
     end
     # The second column must be "id"
     if headers[2] != :id
-        @warn("The second column of the CSV file must be 'id' (got '$(headers[2])')")
+        @debug("The second column of the CSV file must be 'id'")
         return false
     end
     return true
@@ -86,19 +86,13 @@ function insert_data(dict::Dict{Symbol, Any}, keys::Vector{Symbol}, data::Any)
 end
 
 function csv_to_json(file_path::AbstractString, nesting_str::AbstractString="--")::Vector{Dict{Symbol,Any}}
-    data = DataFrame(duckdb_read(file_path))
-    # Rearrange Type and id to be the first two columns if they exist
-    col_names = propertynames(data)
-    if :Type in col_names && :id in col_names
-        other_cols = [n for n in col_names if n ∉ (:Type, :id)]
-        select!(data, [:Type, :id, other_cols...])
-    end
+    data = duckdb_read(file_path)
     if !validate_csv_data(data)
         return Vector{Dict{Symbol,Any}}()
     end
 
     column_map = Dict{Symbol, Any}()
-    for header in propertynames(data)
+    for header in data.names
         props = Symbol.(split(string(header), nesting_str))
         column_map[header] = [:instance_data, props...]
     end
@@ -107,10 +101,37 @@ function csv_to_json(file_path::AbstractString, nesting_str::AbstractString="--"
     column_map[:Type] = [:type]
     
     all_json_data = Vector{Dict{Symbol, Any}}()
-    for row in eachrow(data)
+    for row in data
         json_data = Dict{Symbol, Any}()
         for (col_name, dict_address) in column_map
             insert_data(json_data, dict_address, row[col_name])
+        end
+        Base.push!(all_json_data, json_data)
+    end
+
+    return all_json_data
+end
+
+function nodes_csv_to_nodes_json(file_path::AbstractString, nesting_str::AbstractString="--")::Vector{Dict{Symbol,Any}}
+    data = duckdb_read(file_path)
+    if !validate_csv_data(data)
+        return Vector{Dict{Symbol,Any}}()
+    end
+
+    column_map = Dict{Symbol, Any}()
+    for header in data.names
+        props = Symbol.(split(string(header), nesting_str))
+        column_map[header] = [:instance_data, props...]
+    end
+    column_map[:Type] = [:type]
+
+    all_json_data = Vector{Dict{Symbol, Any}}()
+    for row in data
+        json_data = Dict{Symbol, Any}()
+        for (col_name, dict_address) in column_map
+            val = row[col_name]
+            ismissing(val) && continue
+            insert_data(json_data, dict_address, val)
         end
         Base.push!(all_json_data, json_data)
     end
@@ -179,6 +200,26 @@ function extract_data!(json_data::AbstractDict{Symbol, <:Any}, row_data::Abstrac
                         :header => header,
                     )
                 )
+            end
+        else
+            row_data[Symbol(prefix * string(key))] = value
+        end
+    end
+end
+
+function nodes_extract_data!(json_data::AbstractDict{Symbol, <:Any}, row_data::AbstractDict{Symbol, Any}, vec_data::VectorData, prefix::AbstractString="", nesting_str::AbstractString="--")
+    for (key, value) in json_data
+        if value isa Dict
+            new_prefix = prefix * string(key) * nesting_str
+            nodes_extract_data!(value, row_data, vec_data, new_prefix, nesting_str)
+        elseif value isa Vector
+            if length(value) == 1
+                row_data[Symbol(prefix * string(key))] = value[1]
+            else
+                header = Symbol(new_header(vec_data, prefix * string(key)))
+                add!(vec_data, value, header)
+                row_data[Symbol(prefix * string(key) * nesting_str * "timeseries" * nesting_str * "path")] = vec_data.file_path
+                row_data[Symbol(prefix * string(key) * nesting_str * "timeseries" * nesting_str * "header")] = header
             end
         else
             row_data[Symbol(prefix * string(key))] = value
@@ -292,7 +333,7 @@ function json_to_csv(json_data::AbstractDict{Symbol, Any}, row_data::RowData=Row
 
     if vec_data.max_length > 0
         fillmissing!(vec_data)
-        write_csv(vec_name.file_path, DataFrame(vec_data.data, vec_data.headers))
+        write_csv(vec_data.file_path, DataFrame(vec_data.data, vec_data.headers))
     end
         
     return row_data
@@ -302,6 +343,48 @@ function json_to_csv(json_data::Vector{Dict{Symbol, Any}}, row_data::RowData=Row
     for json in json_data
         merge!(row_data, json_to_csv(json, RowData(), vec_data, nesting_str))
     end
+    return row_data
+end
+
+function nodes_json_to_nodes_csv(json_data::AbstractDict{Symbol, Any}, row_data::RowData=RowData(), vec_data::VectorData=VectorData(), nesting_str::AbstractString="--")
+    if !haskey(json_data, :type)
+        @debug("Missing :type key in $(json_data)")
+        for (key, value) in json_data
+            if key in [:global_data, :instance_data]
+                error("Invalid JSON data format: $key should not be present without a :type key")
+            end
+            merge!(row_data, nodes_json_to_nodes_csv(value, RowData(), vec_data, nesting_str))
+        end
+        return row_data
+    end
+
+    asset_type = Symbol(json_data[:type])
+
+    global_row_data = OrderedDict{Symbol, Any}()
+    if haskey(json_data, :global_data)
+        nodes_extract_data!(json_data[:global_data], global_row_data, vec_data, "", nesting_str)
+    end
+
+    if !haskey(json_data, :instance_data)
+        return RowData(OrderedDict(asset_type => global_row_data))
+    end
+
+    for instance_data in json_data[:instance_data]
+        asset_row_data = OrderedDict{Symbol, Any}(
+            :Type => string(asset_type),
+            :id => instance_data[:id]
+        )
+        delete!(instance_data, :id)
+        Base.merge!(asset_row_data, deepcopy(global_row_data))
+        nodes_extract_data!(instance_data, asset_row_data, vec_data, "", nesting_str)
+        push!(row_data, asset_type, asset_row_data)
+    end
+
+    if vec_data.max_length > 0
+        fillmissing!(vec_data)
+        write_csv(vec_data.file_path, DataFrame(vec_data.data, vec_data.headers))
+    end
+
     return row_data
 end
 

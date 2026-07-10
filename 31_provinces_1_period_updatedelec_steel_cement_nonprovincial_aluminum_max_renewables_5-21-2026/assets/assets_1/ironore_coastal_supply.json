@@ -1,0 +1,128 @@
+{
+  "transmission": {
+    "global_data": {
+      "transforms": {},
+      "edges": {
+        "transmission_edge": {
+          "unidirectional": true,
+          "has_capacity": false,
+          "commodity": "IronOre",
+          "loss_fraction": 0
+        }
+      }
+    },
+    "instance_data": [
+      {
+        "id": "ironore_coastal_transport_Region3Hebei",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_coastal_Region3Hebei",
+            "end_vertex": "ironore_Region3Hebei",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_coastal_transport_Region6Liaoning",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_coastal_Region6Liaoning",
+            "end_vertex": "ironore_Region6Liaoning",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_coastal_transport_Region15Shandong",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_coastal_Region15Shandong",
+            "end_vertex": "ironore_Region15Shandong",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_coastal_transport_Region10Jiangsu",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_coastal_Region10Jiangsu",
+            "end_vertex": "ironore_Region10Jiangsu",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_coastal_transport_Region11Zhejiang",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_coastal_Region11Zhejiang",
+            "end_vertex": "ironore_Region11Zhejiang",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_coastal_transport_Region13Fujian",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_coastal_Region13Fujian",
+            "end_vertex": "ironore_Region13Fujian",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_coastal_transport_Region19Guangdong",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_coastal_Region19Guangdong",
+            "end_vertex": "ironore_Region19Guangdong",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_coastal_transport_Region20Guangxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_coastal_Region20Guangxi",
+            "end_vertex": "ironore_Region20Guangxi",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_coastal_transport_Region21Hainan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_coastal_Region21Hainan",
+            "end_vertex": "ironore_Region21Hainan",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_coastal_transport_Region9Shanghai",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_coastal_Region9Shanghai",
+            "end_vertex": "ironore_Region9Shanghai",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_coastal_transport_Region2Tianjin",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_coastal_Region2Tianjin",
+            "end_vertex": "ironore_Region2Tianjin",
+            "variable_om_cost": 0
+          }
+        }
+      }
+    ],
+    "type": "OneWayTransmissionLink"
+  }
+}

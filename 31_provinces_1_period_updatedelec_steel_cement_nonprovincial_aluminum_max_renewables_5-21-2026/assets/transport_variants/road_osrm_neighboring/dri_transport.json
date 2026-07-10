@@ -1,0 +1,1378 @@
+{
+  "transmission": {
+    "global_data": {
+      "transforms": {},
+      "edges": {
+        "transmission_edge": {
+          "unidirectional": true,
+          "has_capacity": false,
+          "commodity": "DRI",
+          "loss_fraction": 0
+        }
+      }
+    },
+    "instance_data": [
+      {
+        "id": "dri_transport_Region1Beijing_to_Region2Tianjin",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region1Beijing",
+            "end_vertex": "dri_Region2Tianjin",
+            "variable_om_cost": 4.19
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region1Beijing_to_Region3Hebei",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region1Beijing",
+            "end_vertex": "dri_Region3Hebei",
+            "variable_om_cost": 9.84
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region2Tianjin_to_Region1Beijing",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region2Tianjin",
+            "end_vertex": "dri_Region1Beijing",
+            "variable_om_cost": 4.02
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region2Tianjin_to_Region3Hebei",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region2Tianjin",
+            "end_vertex": "dri_Region3Hebei",
+            "variable_om_cost": 10.26
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region3Hebei_to_Region1Beijing",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region3Hebei",
+            "end_vertex": "dri_Region1Beijing",
+            "variable_om_cost": 9.94
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region3Hebei_to_Region2Tianjin",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region3Hebei",
+            "end_vertex": "dri_Region2Tianjin",
+            "variable_om_cost": 10.27
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region3Hebei_to_Region4Shanxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region3Hebei",
+            "end_vertex": "dri_Region4Shanxi",
+            "variable_om_cost": 7.52
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region3Hebei_to_Region5Innermongolia",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region3Hebei",
+            "end_vertex": "dri_Region5Innermongolia",
+            "variable_om_cost": 19.08
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region3Hebei_to_Region6Liaoning",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region3Hebei",
+            "end_vertex": "dri_Region6Liaoning",
+            "variable_om_cost": 32.33
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region3Hebei_to_Region15Shandong",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region3Hebei",
+            "end_vertex": "dri_Region15Shandong",
+            "variable_om_cost": 10.39
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region3Hebei_to_Region16Henan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region3Hebei",
+            "end_vertex": "dri_Region16Henan",
+            "variable_om_cost": 14.17
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region4Shanxi_to_Region3Hebei",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region4Shanxi",
+            "end_vertex": "dri_Region3Hebei",
+            "variable_om_cost": 7.53
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region4Shanxi_to_Region5Innermongolia",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region4Shanxi",
+            "end_vertex": "dri_Region5Innermongolia",
+            "variable_om_cost": 13.96
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region4Shanxi_to_Region16Henan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region4Shanxi",
+            "end_vertex": "dri_Region16Henan",
+            "variable_om_cost": 14.77
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region4Shanxi_to_Region27Shaanxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region4Shanxi",
+            "end_vertex": "dri_Region27Shaanxi",
+            "variable_om_cost": 20.48
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region5Innermongolia_to_Region3Hebei",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region5Innermongolia",
+            "end_vertex": "dri_Region3Hebei",
+            "variable_om_cost": 19.24
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region5Innermongolia_to_Region4Shanxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region5Innermongolia",
+            "end_vertex": "dri_Region4Shanxi",
+            "variable_om_cost": 14.01
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region5Innermongolia_to_Region6Liaoning",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region5Innermongolia",
+            "end_vertex": "dri_Region6Liaoning",
+            "variable_om_cost": 39.64
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region5Innermongolia_to_Region7Jilin",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region5Innermongolia",
+            "end_vertex": "dri_Region7Jilin",
+            "variable_om_cost": 46.18
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region5Innermongolia_to_Region8Heilongjiang",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region5Innermongolia",
+            "end_vertex": "dri_Region8Heilongjiang",
+            "variable_om_cost": 53.97
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region5Innermongolia_to_Region27Shaanxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region5Innermongolia",
+            "end_vertex": "dri_Region27Shaanxi",
+            "variable_om_cost": 32.84
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region5Innermongolia_to_Region28Gansu",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region5Innermongolia",
+            "end_vertex": "dri_Region28Gansu",
+            "variable_om_cost": 35.81
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region5Innermongolia_to_Region30Ningxia",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region5Innermongolia",
+            "end_vertex": "dri_Region30Ningxia",
+            "variable_om_cost": 22.25
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region6Liaoning_to_Region3Hebei",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region6Liaoning",
+            "end_vertex": "dri_Region3Hebei",
+            "variable_om_cost": 32.32
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region6Liaoning_to_Region5Innermongolia",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region6Liaoning",
+            "end_vertex": "dri_Region5Innermongolia",
+            "variable_om_cost": 39.3
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region6Liaoning_to_Region7Jilin",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region6Liaoning",
+            "end_vertex": "dri_Region7Jilin",
+            "variable_om_cost": 9.75
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region7Jilin_to_Region5Innermongolia",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region7Jilin",
+            "end_vertex": "dri_Region5Innermongolia",
+            "variable_om_cost": 46.86
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region7Jilin_to_Region6Liaoning",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region7Jilin",
+            "end_vertex": "dri_Region6Liaoning",
+            "variable_om_cost": 9.78
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region7Jilin_to_Region8Heilongjiang",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region7Jilin",
+            "end_vertex": "dri_Region8Heilongjiang",
+            "variable_om_cost": 8.64
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region8Heilongjiang_to_Region5Innermongolia",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region8Heilongjiang",
+            "end_vertex": "dri_Region5Innermongolia",
+            "variable_om_cost": 54.04
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region8Heilongjiang_to_Region7Jilin",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region8Heilongjiang",
+            "end_vertex": "dri_Region7Jilin",
+            "variable_om_cost": 8.62
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region9Shanghai_to_Region10Jiangsu",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region9Shanghai",
+            "end_vertex": "dri_Region10Jiangsu",
+            "variable_om_cost": 10.17
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region9Shanghai_to_Region11Zhejiang",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region9Shanghai",
+            "end_vertex": "dri_Region11Zhejiang",
+            "variable_om_cost": 6.09
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region10Jiangsu_to_Region9Shanghai",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region10Jiangsu",
+            "end_vertex": "dri_Region9Shanghai",
+            "variable_om_cost": 10.06
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region10Jiangsu_to_Region11Zhejiang",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region10Jiangsu",
+            "end_vertex": "dri_Region11Zhejiang",
+            "variable_om_cost": 9.26
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region10Jiangsu_to_Region12Anhui",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region10Jiangsu",
+            "end_vertex": "dri_Region12Anhui",
+            "variable_om_cost": 5.45
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region10Jiangsu_to_Region15Shandong",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region10Jiangsu",
+            "end_vertex": "dri_Region15Shandong",
+            "variable_om_cost": 20.99
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region11Zhejiang_to_Region9Shanghai",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region11Zhejiang",
+            "end_vertex": "dri_Region9Shanghai",
+            "variable_om_cost": 5.93
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region11Zhejiang_to_Region10Jiangsu",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region11Zhejiang",
+            "end_vertex": "dri_Region10Jiangsu",
+            "variable_om_cost": 9.25
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region11Zhejiang_to_Region12Anhui",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region11Zhejiang",
+            "end_vertex": "dri_Region12Anhui",
+            "variable_om_cost": 13.43
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region11Zhejiang_to_Region13Fujian",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region11Zhejiang",
+            "end_vertex": "dri_Region13Fujian",
+            "variable_om_cost": 20.23
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region11Zhejiang_to_Region14Jiangxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region11Zhejiang",
+            "end_vertex": "dri_Region14Jiangxi",
+            "variable_om_cost": 17.64
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region12Anhui_to_Region10Jiangsu",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region12Anhui",
+            "end_vertex": "dri_Region10Jiangsu",
+            "variable_om_cost": 5.46
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region12Anhui_to_Region11Zhejiang",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region12Anhui",
+            "end_vertex": "dri_Region11Zhejiang",
+            "variable_om_cost": 13.55
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region12Anhui_to_Region14Jiangxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region12Anhui",
+            "end_vertex": "dri_Region14Jiangxi",
+            "variable_om_cost": 14.91
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region12Anhui_to_Region15Shandong",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region12Anhui",
+            "end_vertex": "dri_Region15Shandong",
+            "variable_om_cost": 21.5
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region12Anhui_to_Region16Henan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region12Anhui",
+            "end_vertex": "dri_Region16Henan",
+            "variable_om_cost": 18.62
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region12Anhui_to_Region17Hubei",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region12Anhui",
+            "end_vertex": "dri_Region17Hubei",
+            "variable_om_cost": 12.59
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region13Fujian_to_Region11Zhejiang",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region13Fujian",
+            "end_vertex": "dri_Region11Zhejiang",
+            "variable_om_cost": 20.26
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region13Fujian_to_Region14Jiangxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region13Fujian",
+            "end_vertex": "dri_Region14Jiangxi",
+            "variable_om_cost": 18.76
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region13Fujian_to_Region19Guangdong",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region13Fujian",
+            "end_vertex": "dri_Region19Guangdong",
+            "variable_om_cost": 29.45
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region14Jiangxi_to_Region11Zhejiang",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region14Jiangxi",
+            "end_vertex": "dri_Region11Zhejiang",
+            "variable_om_cost": 17.85
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region14Jiangxi_to_Region12Anhui",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region14Jiangxi",
+            "end_vertex": "dri_Region12Anhui",
+            "variable_om_cost": 14.75
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region14Jiangxi_to_Region13Fujian",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region14Jiangxi",
+            "end_vertex": "dri_Region13Fujian",
+            "variable_om_cost": 18.79
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region14Jiangxi_to_Region17Hubei",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region14Jiangxi",
+            "end_vertex": "dri_Region17Hubei",
+            "variable_om_cost": 11.32
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region14Jiangxi_to_Region18Hunan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region14Jiangxi",
+            "end_vertex": "dri_Region18Hunan",
+            "variable_om_cost": 11.44
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region14Jiangxi_to_Region19Guangdong",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region14Jiangxi",
+            "end_vertex": "dri_Region19Guangdong",
+            "variable_om_cost": 26.28
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region15Shandong_to_Region3Hebei",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region15Shandong",
+            "end_vertex": "dri_Region3Hebei",
+            "variable_om_cost": 10.34
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region15Shandong_to_Region10Jiangsu",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region15Shandong",
+            "end_vertex": "dri_Region10Jiangsu",
+            "variable_om_cost": 20.92
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region15Shandong_to_Region12Anhui",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region15Shandong",
+            "end_vertex": "dri_Region12Anhui",
+            "variable_om_cost": 21.46
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region15Shandong_to_Region16Henan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region15Shandong",
+            "end_vertex": "dri_Region16Henan",
+            "variable_om_cost": 15.29
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region16Henan_to_Region3Hebei",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region16Henan",
+            "end_vertex": "dri_Region3Hebei",
+            "variable_om_cost": 14.09
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region16Henan_to_Region4Shanxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region16Henan",
+            "end_vertex": "dri_Region4Shanxi",
+            "variable_om_cost": 14.73
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region16Henan_to_Region12Anhui",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region16Henan",
+            "end_vertex": "dri_Region12Anhui",
+            "variable_om_cost": 18.75
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region16Henan_to_Region15Shandong",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region16Henan",
+            "end_vertex": "dri_Region15Shandong",
+            "variable_om_cost": 15.18
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region16Henan_to_Region17Hubei",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region16Henan",
+            "end_vertex": "dri_Region17Hubei",
+            "variable_om_cost": 17.28
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region16Henan_to_Region27Shaanxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region16Henan",
+            "end_vertex": "dri_Region27Shaanxi",
+            "variable_om_cost": 16.28
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region17Hubei_to_Region12Anhui",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region17Hubei",
+            "end_vertex": "dri_Region12Anhui",
+            "variable_om_cost": 12.46
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region17Hubei_to_Region14Jiangxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region17Hubei",
+            "end_vertex": "dri_Region14Jiangxi",
+            "variable_om_cost": 11.55
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region17Hubei_to_Region16Henan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region17Hubei",
+            "end_vertex": "dri_Region16Henan",
+            "variable_om_cost": 17.44
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region17Hubei_to_Region18Hunan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region17Hubei",
+            "end_vertex": "dri_Region18Hunan",
+            "variable_om_cost": 11.36
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region17Hubei_to_Region22Chongqing",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region17Hubei",
+            "end_vertex": "dri_Region22Chongqing",
+            "variable_om_cost": 28.81
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region17Hubei_to_Region27Shaanxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region17Hubei",
+            "end_vertex": "dri_Region27Shaanxi",
+            "variable_om_cost": 24.88
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region18Hunan_to_Region14Jiangxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region18Hunan",
+            "end_vertex": "dri_Region14Jiangxi",
+            "variable_om_cost": 11.54
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region18Hunan_to_Region17Hubei",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region18Hunan",
+            "end_vertex": "dri_Region17Hubei",
+            "variable_om_cost": 11.3
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region18Hunan_to_Region19Guangdong",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region18Hunan",
+            "end_vertex": "dri_Region19Guangdong",
+            "variable_om_cost": 22.81
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region18Hunan_to_Region20Guangxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region18Hunan",
+            "end_vertex": "dri_Region20Guangxi",
+            "variable_om_cost": 29.85
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region18Hunan_to_Region22Chongqing",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region18Hunan",
+            "end_vertex": "dri_Region22Chongqing",
+            "variable_om_cost": 25.56
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region18Hunan_to_Region24Guizhou",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region18Hunan",
+            "end_vertex": "dri_Region24Guizhou",
+            "variable_om_cost": 26.43
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region19Guangdong_to_Region13Fujian",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region19Guangdong",
+            "end_vertex": "dri_Region13Fujian",
+            "variable_om_cost": 29.46
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region19Guangdong_to_Region14Jiangxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region19Guangdong",
+            "end_vertex": "dri_Region14Jiangxi",
+            "variable_om_cost": 26.5
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region19Guangdong_to_Region18Hunan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region19Guangdong",
+            "end_vertex": "dri_Region18Hunan",
+            "variable_om_cost": 23.09
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region19Guangdong_to_Region20Guangxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region19Guangdong",
+            "end_vertex": "dri_Region20Guangxi",
+            "variable_om_cost": 18.99
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region20Guangxi_to_Region18Hunan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region20Guangxi",
+            "end_vertex": "dri_Region18Hunan",
+            "variable_om_cost": 29.8
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region20Guangxi_to_Region19Guangdong",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region20Guangxi",
+            "end_vertex": "dri_Region19Guangdong",
+            "variable_om_cost": 18.95
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region20Guangxi_to_Region24Guizhou",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region20Guangxi",
+            "end_vertex": "dri_Region24Guizhou",
+            "variable_om_cost": 18.91
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region20Guangxi_to_Region25Yunnan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region20Guangxi",
+            "end_vertex": "dri_Region25Yunnan",
+            "variable_om_cost": 25.81
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region22Chongqing_to_Region17Hubei",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region22Chongqing",
+            "end_vertex": "dri_Region17Hubei",
+            "variable_om_cost": 28.84
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region22Chongqing_to_Region18Hunan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region22Chongqing",
+            "end_vertex": "dri_Region18Hunan",
+            "variable_om_cost": 25.61
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region22Chongqing_to_Region23Sichuan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region22Chongqing",
+            "end_vertex": "dri_Region23Sichuan",
+            "variable_om_cost": 12.24
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region22Chongqing_to_Region24Guizhou",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region22Chongqing",
+            "end_vertex": "dri_Region24Guizhou",
+            "variable_om_cost": 12.81
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region22Chongqing_to_Region27Shaanxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region22Chongqing",
+            "end_vertex": "dri_Region27Shaanxi",
+            "variable_om_cost": 24.1
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region23Sichuan_to_Region22Chongqing",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region23Sichuan",
+            "end_vertex": "dri_Region22Chongqing",
+            "variable_om_cost": 12.17
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region23Sichuan_to_Region24Guizhou",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region23Sichuan",
+            "end_vertex": "dri_Region24Guizhou",
+            "variable_om_cost": 21.03
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region23Sichuan_to_Region25Yunnan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region23Sichuan",
+            "end_vertex": "dri_Region25Yunnan",
+            "variable_om_cost": 27.67
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region23Sichuan_to_Region27Shaanxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region23Sichuan",
+            "end_vertex": "dri_Region27Shaanxi",
+            "variable_om_cost": 24.5
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region23Sichuan_to_Region28Gansu",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region23Sichuan",
+            "end_vertex": "dri_Region28Gansu",
+            "variable_om_cost": 28.81
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region23Sichuan_to_Region29Qinghai",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region23Sichuan",
+            "end_vertex": "dri_Region29Qinghai",
+            "variable_om_cost": 33.0
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region24Guizhou_to_Region18Hunan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region24Guizhou",
+            "end_vertex": "dri_Region18Hunan",
+            "variable_om_cost": 26.37
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region24Guizhou_to_Region20Guangxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region24Guizhou",
+            "end_vertex": "dri_Region20Guangxi",
+            "variable_om_cost": 18.92
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region24Guizhou_to_Region22Chongqing",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region24Guizhou",
+            "end_vertex": "dri_Region22Chongqing",
+            "variable_om_cost": 12.71
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region24Guizhou_to_Region23Sichuan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region24Guizhou",
+            "end_vertex": "dri_Region23Sichuan",
+            "variable_om_cost": 21.06
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region24Guizhou_to_Region25Yunnan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region24Guizhou",
+            "end_vertex": "dri_Region25Yunnan",
+            "variable_om_cost": 17.63
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region25Yunnan_to_Region20Guangxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region25Yunnan",
+            "end_vertex": "dri_Region20Guangxi",
+            "variable_om_cost": 25.93
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region25Yunnan_to_Region23Sichuan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region25Yunnan",
+            "end_vertex": "dri_Region23Sichuan",
+            "variable_om_cost": 27.67
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region25Yunnan_to_Region24Guizhou",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region25Yunnan",
+            "end_vertex": "dri_Region24Guizhou",
+            "variable_om_cost": 17.64
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region27Shaanxi_to_Region4Shanxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region27Shaanxi",
+            "end_vertex": "dri_Region4Shanxi",
+            "variable_om_cost": 20.46
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region27Shaanxi_to_Region5Innermongolia",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region27Shaanxi",
+            "end_vertex": "dri_Region5Innermongolia",
+            "variable_om_cost": 32.78
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region27Shaanxi_to_Region16Henan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region27Shaanxi",
+            "end_vertex": "dri_Region16Henan",
+            "variable_om_cost": 16.12
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region27Shaanxi_to_Region17Hubei",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region27Shaanxi",
+            "end_vertex": "dri_Region17Hubei",
+            "variable_om_cost": 24.84
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region27Shaanxi_to_Region22Chongqing",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region27Shaanxi",
+            "end_vertex": "dri_Region22Chongqing",
+            "variable_om_cost": 24.05
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region27Shaanxi_to_Region23Sichuan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region27Shaanxi",
+            "end_vertex": "dri_Region23Sichuan",
+            "variable_om_cost": 24.53
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region27Shaanxi_to_Region28Gansu",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region27Shaanxi",
+            "end_vertex": "dri_Region28Gansu",
+            "variable_om_cost": 20.83
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region27Shaanxi_to_Region30Ningxia",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region27Shaanxi",
+            "end_vertex": "dri_Region30Ningxia",
+            "variable_om_cost": 20.89
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region28Gansu_to_Region5Innermongolia",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region28Gansu",
+            "end_vertex": "dri_Region5Innermongolia",
+            "variable_om_cost": 35.74
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region28Gansu_to_Region23Sichuan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region28Gansu",
+            "end_vertex": "dri_Region23Sichuan",
+            "variable_om_cost": 28.91
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region28Gansu_to_Region27Shaanxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region28Gansu",
+            "end_vertex": "dri_Region27Shaanxi",
+            "variable_om_cost": 20.72
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region28Gansu_to_Region29Qinghai",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region28Gansu",
+            "end_vertex": "dri_Region29Qinghai",
+            "variable_om_cost": 7.52
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region28Gansu_to_Region30Ningxia",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region28Gansu",
+            "end_vertex": "dri_Region30Ningxia",
+            "variable_om_cost": 14.32
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region28Gansu_to_Region31Xinjiang",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region28Gansu",
+            "end_vertex": "dri_Region31Xinjiang",
+            "variable_om_cost": 64.82
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region29Qinghai_to_Region23Sichuan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region29Qinghai",
+            "end_vertex": "dri_Region23Sichuan",
+            "variable_om_cost": 33.08
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region29Qinghai_to_Region28Gansu",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region29Qinghai",
+            "end_vertex": "dri_Region28Gansu",
+            "variable_om_cost": 7.48
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region29Qinghai_to_Region31Xinjiang",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region29Qinghai",
+            "end_vertex": "dri_Region31Xinjiang",
+            "variable_om_cost": 59.16
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region30Ningxia_to_Region5Innermongolia",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region30Ningxia",
+            "end_vertex": "dri_Region5Innermongolia",
+            "variable_om_cost": 22.2
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region30Ningxia_to_Region27Shaanxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region30Ningxia",
+            "end_vertex": "dri_Region27Shaanxi",
+            "variable_om_cost": 20.9
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region30Ningxia_to_Region28Gansu",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region30Ningxia",
+            "end_vertex": "dri_Region28Gansu",
+            "variable_om_cost": 14.27
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region31Xinjiang_to_Region28Gansu",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region31Xinjiang",
+            "end_vertex": "dri_Region28Gansu",
+            "variable_om_cost": 64.9
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region31Xinjiang_to_Region29Qinghai",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region31Xinjiang",
+            "end_vertex": "dri_Region29Qinghai",
+            "variable_om_cost": 59.24
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region26Tibet_to_Region23Sichuan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region26Tibet",
+            "end_vertex": "dri_Region23Sichuan",
+            "variable_om_cost": 67.84
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region23Sichuan_to_Region26Tibet",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region23Sichuan",
+            "end_vertex": "dri_Region26Tibet",
+            "variable_om_cost": 67.3
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region26Tibet_to_Region25Yunnan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region26Tibet",
+            "end_vertex": "dri_Region25Yunnan",
+            "variable_om_cost": 74.15
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region25Yunnan_to_Region26Tibet",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region25Yunnan",
+            "end_vertex": "dri_Region26Tibet",
+            "variable_om_cost": 74.09
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region26Tibet_to_Region29Qinghai",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region26Tibet",
+            "end_vertex": "dri_Region29Qinghai",
+            "variable_om_cost": 64.89
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region29Qinghai_to_Region26Tibet",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region29Qinghai",
+            "end_vertex": "dri_Region26Tibet",
+            "variable_om_cost": 64.84
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region26Tibet_to_Region31Xinjiang",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region26Tibet",
+            "end_vertex": "dri_Region31Xinjiang",
+            "variable_om_cost": 88.47
+          }
+        }
+      },
+      {
+        "id": "dri_transport_Region31Xinjiang_to_Region26Tibet",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "dri_Region31Xinjiang",
+            "end_vertex": "dri_Region26Tibet",
+            "variable_om_cost": 88.57
+          }
+        }
+      }
+    ],
+    "type": "OneWayTransmissionLink"
+  }
+}

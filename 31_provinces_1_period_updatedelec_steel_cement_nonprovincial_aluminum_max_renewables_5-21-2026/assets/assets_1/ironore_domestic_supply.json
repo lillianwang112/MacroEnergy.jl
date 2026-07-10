@@ -1,0 +1,328 @@
+{
+  "transmission": {
+    "global_data": {
+      "transforms": {},
+      "edges": {
+        "transmission_edge": {
+          "unidirectional": true,
+          "has_capacity": false,
+          "commodity": "IronOre",
+          "loss_fraction": 0
+        }
+      }
+    },
+    "instance_data": [
+      {
+        "id": "ironore_domestic_transport_Region1Beijing",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region1Beijing",
+            "end_vertex": "ironore_Region1Beijing",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region2Tianjin",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region2Tianjin",
+            "end_vertex": "ironore_Region2Tianjin",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region3Hebei",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region3Hebei",
+            "end_vertex": "ironore_Region3Hebei",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region4Shanxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region4Shanxi",
+            "end_vertex": "ironore_Region4Shanxi",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region5Innermongolia",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region5Innermongolia",
+            "end_vertex": "ironore_Region5Innermongolia",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region6Liaoning",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region6Liaoning",
+            "end_vertex": "ironore_Region6Liaoning",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region7Jilin",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region7Jilin",
+            "end_vertex": "ironore_Region7Jilin",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region8Heilongjiang",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region8Heilongjiang",
+            "end_vertex": "ironore_Region8Heilongjiang",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region9Shanghai",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region9Shanghai",
+            "end_vertex": "ironore_Region9Shanghai",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region10Jiangsu",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region10Jiangsu",
+            "end_vertex": "ironore_Region10Jiangsu",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region11Zhejiang",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region11Zhejiang",
+            "end_vertex": "ironore_Region11Zhejiang",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region12Anhui",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region12Anhui",
+            "end_vertex": "ironore_Region12Anhui",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region13Fujian",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region13Fujian",
+            "end_vertex": "ironore_Region13Fujian",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region14Jiangxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region14Jiangxi",
+            "end_vertex": "ironore_Region14Jiangxi",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region15Shandong",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region15Shandong",
+            "end_vertex": "ironore_Region15Shandong",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region16Henan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region16Henan",
+            "end_vertex": "ironore_Region16Henan",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region17Hubei",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region17Hubei",
+            "end_vertex": "ironore_Region17Hubei",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region18Hunan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region18Hunan",
+            "end_vertex": "ironore_Region18Hunan",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region19Guangdong",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region19Guangdong",
+            "end_vertex": "ironore_Region19Guangdong",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region20Guangxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region20Guangxi",
+            "end_vertex": "ironore_Region20Guangxi",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region21Hainan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region21Hainan",
+            "end_vertex": "ironore_Region21Hainan",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region22Chongqing",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region22Chongqing",
+            "end_vertex": "ironore_Region22Chongqing",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region23Sichuan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region23Sichuan",
+            "end_vertex": "ironore_Region23Sichuan",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region24Guizhou",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region24Guizhou",
+            "end_vertex": "ironore_Region24Guizhou",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region25Yunnan",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region25Yunnan",
+            "end_vertex": "ironore_Region25Yunnan",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region26Tibet",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region26Tibet",
+            "end_vertex": "ironore_Region26Tibet",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region27Shaanxi",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region27Shaanxi",
+            "end_vertex": "ironore_Region27Shaanxi",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region28Gansu",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region28Gansu",
+            "end_vertex": "ironore_Region28Gansu",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region29Qinghai",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region29Qinghai",
+            "end_vertex": "ironore_Region29Qinghai",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region30Ningxia",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region30Ningxia",
+            "end_vertex": "ironore_Region30Ningxia",
+            "variable_om_cost": 0
+          }
+        }
+      },
+      {
+        "id": "ironore_domestic_transport_Region31Xinjiang",
+        "edges": {
+          "transmission_edge": {
+            "start_vertex": "ironore_domestic_Region31Xinjiang",
+            "end_vertex": "ironore_Region31Xinjiang",
+            "variable_om_cost": 0
+          }
+        }
+      }
+    ],
+    "type": "OneWayTransmissionLink"
+  }
+}

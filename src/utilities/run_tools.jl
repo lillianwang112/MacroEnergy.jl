@@ -1,5 +1,5 @@
 """
-    run_case(case_path; kwargs...) -> (case::Case, solution::Any)
+    run_case(case_path; kwargs...) -> (systems::Vector{System}, solution::Any)
 
 Load, solve, and write results for a Macro case. This is the main entry point for running 
 a complete Macro workflow.
@@ -34,11 +34,9 @@ a complete Macro workflow.
 - `subproblem_optimizer_attributes::Tuple`: Solver settings for the subproblems.
 
 # Returns
-- `case::Case`: A case object containing a vector of solved system objects (one per period) and the case settings
+- `systems::Vector{System}`: Vector of solved system objects (one per period).
 - `solution`: The solution object (type depends on the solution algorithm: `Model` for 
-  Monolithic, `MyopicResults` for Myopic (both Monolithic and Benders), `BendersModel`
-  for Perfect Foresight + Benders). `MyopicResults.results` holds a `Vector` of per-period
-  results when `ReturnModels=true`, or `nothing` when `ReturnModels=false`.
+  Monolithic, `MyopicResults` for Myopic, `BendersResults` for Benders).
 
 # Examples
 
@@ -46,7 +44,7 @@ a complete Macro workflow.
 ```julia
 using MacroEnergy
 
-(case, solution) = run_case(@__DIR__);
+(systems, solution) = run_case(@__DIR__);
 ```
 
 ## Using Gurobi optimizer
@@ -54,7 +52,7 @@ using MacroEnergy
 using MacroEnergy
 using Gurobi
 
-(case, solution) = run_case(
+(systems, solution) = run_case(
     @__DIR__;
     optimizer=Gurobi.Optimizer,
     optimizer_attributes=("Method" => 2, "Crossover" => 0, "BarConvTol" => 1e-3)
@@ -66,7 +64,7 @@ using Gurobi
 using MacroEnergy
 using Gurobi
 
-(case, solution) = run_case(
+(systems, solution) = run_case(
     @__DIR__;
     planning_optimizer=Gurobi.Optimizer,
     subproblem_optimizer=Gurobi.Optimizer,
@@ -80,7 +78,7 @@ using Gurobi
 using MacroEnergy
 using Logging
 
-(case, solution) = run_case(
+(systems, solution) = run_case(
     case_path;
     log_to_console=false,
     log_level=Logging.Warn
@@ -112,7 +110,10 @@ function run_case(
     planning_optimizer::DataType=HiGHS.Optimizer,
     subproblem_optimizer::DataType=HiGHS.Optimizer,
     planning_optimizer_attributes::Tuple=("solver" => "ipm", "run_crossover" => "off", "ipm_optimality_tolerance" => 1e-3),
-    subproblem_optimizer_attributes::Tuple=("solver" => "ipm", "run_crossover" => "on", "ipm_optimality_tolerance" => 1e-3)
+    subproblem_optimizer_attributes::Tuple=("solver" => "ipm", "run_crossover" => "on", "ipm_optimality_tolerance" => 1e-3),
+    # MGA
+    run_mga::Bool=false,
+    mga_variables::Vector{String}=String[]
 )
     # This will run when the Julia process closes. 
     # It may be overfill with the try-catch
@@ -124,94 +125,72 @@ function run_case(
     try 
         @info("Running case at $(case_path)")
 
-        setup_user_additions(case_path)
+        create_user_additions_module(case_path)
         load_user_additions(case_path)
-        refresh_user_type_registries!()
 
-        return Base.invokelatest(
-            _run_case_impl,
-            case_path,
-            lazy_load,
-            log_to_file,
-            log_file_path,
-            optimizer,
-            optimizer_env,
-            optimizer_attributes,
-            planning_optimizer,
-            subproblem_optimizer,
-            planning_optimizer_attributes,
-            subproblem_optimizer_attributes,
-        )
-    catch e
-        rethrow(e)
-    finally
-        case_cleanup()  # Ensure all processes are removed
-    end
-end
+        case = load_case(case_path; lazy_load=lazy_load)
 
-function _run_case_impl(
-    case_path::AbstractString,
-    lazy_load::Bool,
-    log_to_file::Bool,
-    log_file_path::AbstractString,
-    optimizer::DataType,
-    optimizer_env,
-    optimizer_attributes::Tuple,
-    planning_optimizer::DataType,
-    subproblem_optimizer::DataType,
-    planning_optimizer_attributes::Tuple,
-    subproblem_optimizer_attributes::Tuple,
-)
-    case = load_case(case_path; lazy_load=lazy_load)
-
-    # Inputs were scaled by `parameter_scaling_factor` inside `prepare_case!`
-    # (during `load_case`). Restore them after solving/writing so the returned
-    # System is in original units; the `finally` guarantees this even on error.
-    scaling = parameter_scaling_factor(get_settings(case))
-    try
         # Create optimizer based on solution algorithm
-        optimizer_instance = if isa(solution_algorithm(case), Monolithic)
+        optimizer = if isa(solution_algorithm(case), Monolithic) || isa(solution_algorithm(case), Myopic)
             create_optimizer(optimizer, optimizer_env, optimizer_attributes)
         elseif isa(solution_algorithm(case), Benders)
             create_optimizer_benders(planning_optimizer, subproblem_optimizer,
                 planning_optimizer_attributes, subproblem_optimizer_attributes)
         else
-            error("Unknown solution algorithm. Please check `SolutionAlgorithm` in `settings/case_settings.json`. Valid values are \"Monolithic\" and \"Benders\".")
+            error("The solution algorithm is not Monolithic, Myopic, or Benders. Please double check the `SolutionAlgorithm` in the `settings/case_settings.json` file.")
         end
 
         # If Benders, create processes for subproblems optimization
         if isa(solution_algorithm(case), Benders)
             if case.settings.BendersSettings[:Distributed]
                 number_of_subproblems = sum(length(system.time_data[:Electricity].subperiods) for system in case.systems)
-                start_distributed_processes!(case_path, number_of_subproblems)
+                start_distributed_processes!(number_of_subproblems, case_path)
             end
         end
 
-        case, solution = solve_case(case, optimizer_instance)
+        (case, solution) = solve_case(case, optimizer)
+
+        if run_mga && isa(solution, BendersResults)
+            linking_variables_sub = Dict(sp[:subproblem_index] => sp[:linking_variables_sub] for sp in solution.op_subproblem)
+            setup = Dict(pairs(get_settings(case).BendersSettings))
+            mga_vars = isempty(mga_variables) ? name.(all_variables(solution.planning_problem)) : mga_variables
+            mga_results, mga_vectors, mga_var_names = MacroEnergySolvers.benders_mga(
+                solution.planning_problem, solution.op_subproblem, linking_variables_sub, setup, solution, mga_vars)
+            postprocess!(case, solution)
+            if !isa(solution_algorithm(case), Myopic)
+                if length(case.systems) ≥ 1
+                    case_path = create_output_path(case.systems[1], case_path)
+                end
+                write_outputs(case_path, case, solution)
+            end
+            if isa(solution_algorithm(case), Benders) && get_settings(case).BendersSettings[:Distributed] && nprocs() > 1
+                rmprocs(workers())
+            end
+            return case.systems, solution, mga_results, mga_vectors, mga_var_names
+        end
 
         postprocess!(case, solution)
 
-        if isa(solution, MyopicResults)
-            # Outputs already written per-period during iteration; just retrieve the output path for log file copying
-            output_path = solution.output_path
-        else
-            output_path = length(case.systems) ≥ 1 ? create_output_path(case.systems[1], case_path) : case_path
-            write_outputs(output_path, case, solution)
+        # Myopic outputs are written during iteration, so we don't need to write them here
+        if !isa(solution_algorithm(case), Myopic)
+            if length(case.systems) ≥ 1
+                case_path = create_output_path(case.systems[1], case_path)
+            end
+            write_outputs(case_path, case, solution)
         end
 
-        if log_to_file && isfile(log_file_path)
-            cp(log_file_path, joinpath(output_path, basename(log_file_path)); force=true)
-        end
-
+        # If Benders, delete processes
         if isa(solution_algorithm(case), Benders)
             if case.settings.BendersSettings[:Distributed] && nprocs() > 1
                 rmprocs(workers())
             end
         end
 
-        return case, solution
+        return case.systems, solution
+    catch e
+        rethrow(e)
     finally
-        unscale!(case, scaling)
+        case_cleanup()  # Ensure all processes are removed
     end
 end
 

@@ -1,0 +1,19 @@
+{
+  "commodities": [
+    "Electricity",
+    "NaturalGas",
+    "Coal",
+    "CO2",
+    "Uranium",
+    "CO2Captured",
+    "Cement",
+    "Aluminum",
+    "Alumina",
+    "Graphite",
+    "Hydrogen",
+    "IronOre",
+    "SteelScrap",
+    "DRI",
+    "CrudeSteel"
+  ]
+}

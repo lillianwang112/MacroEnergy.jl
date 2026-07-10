@@ -14,11 +14,11 @@ function generate_operation_subproblem(system::System,case_settings::NamedTuple,
 
     operation_model!(system, model)
 
-    if include_subproblem_slacks == true && !haskey(model, :myslack_max)
+    if include_subproblem_slacks == true
         @info("Adding slack variables to ensure subproblems are always feasible")
         slack_penalty = 2*maximum(coefficient(model[:eVariableCost],v) for v in all_variables(model))
-        eq_cons_to_be_relaxed =  get_ldes_constraints_to_relax(system);
-        less_ineq_cons_to_be_relaxed = get_policy_constraints_to_relax(system);
+        eq_cons_to_be_relaxed =  get_all_balance_constraints(system);
+        less_ineq_cons_to_be_relaxed = get_all_policy_constraints(system);
         greater_ineq_cons_to_be_relaxed = Vector{ConstraintRef}();
         add_slack_variables!(model,slack_penalty,eq_cons_to_be_relaxed,less_ineq_cons_to_be_relaxed,greater_ineq_cons_to_be_relaxed)
     end
@@ -69,7 +69,7 @@ function initialize_local_subproblems!(system_local::Vector,subproblems_local::V
     end
 end
 
-function generate_subproblems(system_decomp::Vector,opt::Dict,case_settings::NamedTuple,distributed_bool::Bool,include_subproblem_slacks::Bool)
+function initialize_subproblems!(system_decomp::Vector,opt::Dict,case_settings::NamedTuple,distributed_bool::Bool,include_subproblem_slacks::Bool)
     
     if distributed_bool
         subproblems, linking_variables_sub = initialize_dist_subproblems!(system_decomp,opt,case_settings,include_subproblem_slacks)
@@ -215,8 +215,23 @@ function compute_slack_penalty_value(system::System)
 
 end
 
-function get_ldes_constraints_to_relax(system::System)
+function get_all_balance_constraints(system::System)
     balance_constraints = Vector{JuMPConstraint}();
+    for n in system.locations
+        ### Add slacks also when non-served demand is modeled to cover cases where supply is greater than demand
+        if isa(n,Node) #### && isempty(non_served_demand(n)) 
+            for c in n.constraints
+                if isa(c, BalanceConstraint)
+                    for i in balance_ids(n)
+                        for t in time_interval(n)
+                            push!(balance_constraints, c.constraint_ref[i,t])
+                        end
+                    end
+                end
+            end
+        end
+    end 
+
     for a in system.assets
         for t in fieldnames(typeof(a))
             g = getfield(a,t);
@@ -224,9 +239,9 @@ function get_ldes_constraints_to_relax(system::System)
                 for c in g.constraints
                     if isa(c, BalanceConstraint)
                         STARTS = [first(sp) for sp in subperiods(g)];
-                        for i in keys(g.balance_data)
+                        for i in balance_ids(g)
                             for t in STARTS
-                                push!(balance_constraints, c.constraint_ref[i][t])
+                                push!(balance_constraints, c.constraint_ref[i,t])
                             end
                         end
                     end
@@ -243,7 +258,7 @@ function get_ldes_constraints_to_relax(system::System)
 end
 
 
-function get_policy_constraints_to_relax(system::System)
+function get_all_policy_constraints(system::System)
     policy_constraints = Vector{JuMPConstraint}();
     for n in system.locations
         if isa(n,Node) && isempty(n.price_unmet_policy)
@@ -257,4 +272,18 @@ function get_policy_constraints_to_relax(system::System)
         end
     end 
     return policy_constraints
+end
+
+function update_with_subproblem_solutions!(subproblems::Union{Vector{Dict{Any, Any}},DistributedArrays.DArray}, results::NamedTuple)
+
+    # Only expect feasible subproblems if Benders converged optimally.
+    # If MAXITER/TIMELIMIT was reached with UB=Inf, the best planning sol may still have
+    # infeasible subproblems — using expect_feasible=true would crash before outputs are written.
+    expect_feasible = results.termination_status == "OPTIMAL"
+    subop_sol = MacroEnergySolvers.solve_subproblems(subproblems, results.planning_sol, expect_feasible)
+
+    results = (; results..., subop_sol = subop_sol)
+
+    return nothing
+    
 end

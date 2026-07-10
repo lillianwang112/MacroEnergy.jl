@@ -1,0 +1,74 @@
+{
+  "NaturalGasTransportEmissions": [
+    {
+      "type": "TransportEmissions",
+      "global_data": {
+        "transforms": {
+          "emission_factor": 7.8e-05,
+          "constraints": {
+            "BalanceConstraint": true
+          }
+        },
+        "edges": {
+          "origin_edge": {
+            "commodity": "NaturalGas",
+            "has_capacity": false
+          },
+          "destination_edge": {
+            "commodity": "NaturalGas",
+            "has_capacity": false
+          },
+          "co2_edge": {
+            "commodity": "CO2",
+            "has_capacity": false,
+            "end_vertex": "co2_sink_1"
+          }
+        }
+      },
+      "instance_data": [
+        {
+          "id": "natgas_transport_emissions_MA_to_CT",
+          "transforms": {
+            "distance": 200.0
+          },
+          "edges": {
+            "origin_edge": {
+              "start_vertex": "MA_NG"
+            },
+            "destination_edge": {
+              "end_vertex": "CT_NG"
+            }
+          }
+        },
+        {
+          "id": "natgas_transport_emissions_MA_to_ME",
+          "transforms": {
+            "distance": 300.0
+          },
+          "edges": {
+            "origin_edge": {
+              "start_vertex": "MA_NG"
+            },
+            "destination_edge": {
+              "end_vertex": "ME_NG"
+            }
+          }
+        },
+        {
+          "id": "natgas_transport_emissions_CT_to_ME",
+          "transforms": {
+            "distance": 250.0
+          },
+          "edges": {
+            "origin_edge": {
+              "start_vertex": "CT_NG"
+            },
+            "destination_edge": {
+              "end_vertex": "ME_NG"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -4,7 +4,6 @@ using CSV, JSON3, GZip, Parquet2
 using Dates
 using DuckDB
 using DataFrames
-using JSONTables
 using OrderedCollections
 using JuMP
 using HiGHS
@@ -23,7 +22,7 @@ using Logging
 using LoggingExtras
 
 import MacroEnergyScaling: scale_constraints!
-import JuMP: set_optimizer, set_optimizer_attributes, optimize!
+import JuMP: set_optimizer, set_optimizer_attributes
 
 import Base: /, push!, merge!
 
@@ -49,6 +48,7 @@ abstract type Bauxite <: Commodity end ## tonnes
 abstract type IronOre <: Commodity end ## tonnes
 abstract type SteelScrap <: Commodity end ## tonnes
 abstract type CrudeSteel <: Commodity end ## tonnes
+abstract type DRI <: Commodity end ## tonnes
 abstract type Ammonia <: Commodity end ## MWh
 abstract type Methanol <: Commodity end ## MWh
 abstract type Nitrogen <: Commodity end ## tonnes
@@ -83,18 +83,11 @@ abstract type PlanningConstraint <: AbstractTypeConstraint end
 abstract type AbstractSolutionAlgorithm end
 struct Benders <: AbstractSolutionAlgorithm end
 struct Monolithic <: AbstractSolutionAlgorithm end
+struct Myopic <: AbstractSolutionAlgorithm end
 solution_algorithm(::AbstractSolutionAlgorithm) = Monolithic() # default to monolithic
 solution_algorithm(::Benders) = Benders()
 solution_algorithm(::Monolithic) = Monolithic()
-
-## Expansion horizons
-
-abstract type AbstractExpansionHorizon end
-struct PerfectForesight <: AbstractExpansionHorizon end
-struct Myopic <: AbstractExpansionHorizon end
-expansion_horizon(::AbstractExpansionHorizon) = PerfectForesight() # default to perfect foresight
-expansion_horizon(::PerfectForesight) = PerfectForesight()
-expansion_horizon(::Myopic) = Myopic()
+solution_algorithm(::Myopic) = Myopic()
 
 # global constants
 const ME_DEPOT_PATH = joinpath(homedir(), ".macroenergy")
@@ -181,10 +174,10 @@ include("model/optimizer.jl")
 include("model/generate_model.jl")
 include("model/retrofit.jl")
 include("model/scaling.jl")
+include("model/solver.jl")
 include("model/myopic.jl")
 include_all_in_folder("model/constraints")
 include_all_in_folder("model/benders")
-include("model/solver.jl")
 
 include("utilities/postprocessing.jl")
 
@@ -214,6 +207,9 @@ include("model/assets/hydrores.jl")
 include("model/assets/mustrun.jl")
 include("model/assets/upstreamemissions.jl")
 include("model/assets/downstreamemissions.jl")
+include("model/assets/transportemissions.jl")
+include("model/assets/steelmaking.jl")
+include("model/assets/drimaking.jl")
 include("model/assets/syntheticnaturalgas.jl")
 include("model/assets/syntheticliquidfuels.jl")
 include("model/assets/syntheticammonia.jl")
@@ -370,7 +366,6 @@ export AbstractAsset,
     write_outputs,
     write_storage_level,
     write_curtailment,
-    write_full_timeseries,
     write_time_weights,
     template_system,
     template_node,
@@ -386,7 +381,6 @@ export AbstractAsset,
     example_contents,
     authenticate_github,
     mermaid_diagram,
-    save_mermaid_diagram,
-    write_to_json
+    save_mermaid_diagram
     
 end # module MacroEnergy

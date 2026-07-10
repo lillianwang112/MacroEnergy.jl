@@ -3,7 +3,7 @@
 # ============================================================================
 
 """
-    write_duals(results_dir::AbstractString, system::System, scaling::Float64)
+    write_duals(results_dir::AbstractString, system::System, scaling::Float64=1.0)
 
 Write dual values for all supported constraint types to separate CSV files.
 
@@ -23,7 +23,7 @@ Currently, this function exports dual values for:
 system = case.systems[1]; # single period case
 
 # Export all dual values
-write_duals("results/", system, 1.0)
+write_duals("results/", system)
 ```
 
 # See Also
@@ -33,20 +33,19 @@ write_duals("results/", system, 1.0)
 function write_duals(
     results_dir::AbstractString,
     system::System,
-    scaling::Float64,
-    var_cost_discount::Float64
+    scaling::Float64=1.0
 )
     @info "Writing constraint dual values to $results_dir"
     
     # Export each constraint type to its own file
-    write_balance_duals(results_dir, system, scaling, var_cost_discount)
-    write_co2_cap_duals(results_dir, system, scaling, var_cost_discount)
+    write_balance_duals(results_dir, system, scaling)
+    write_co2_cap_duals(results_dir, system, scaling)
     
     return nothing
 end
 
 """
-    write_balance_duals(results_dir::AbstractString, system::System, scaling::Float64, var_cost_discount::Float64)
+    write_balance_duals(results_dir::AbstractString, system::System, scaling::Float64=1.0)
 
 Write balance constraint dual values (marginal prices) to CSV file.
 
@@ -70,45 +69,22 @@ Wide-format CSV with:
 
 # Examples
 ```julia
-write_balance_duals("results/", system, 1.0, 1.0)
+write_balance_duals("results/", system)
 # Creates: results/balance_duals.csv
 ```
 """
 function write_balance_duals(
     results_dir::AbstractString,
     system::System,
-    scaling::Float64,
-    var_cost_discount::Float64
+    scaling::Float64=1.0
 )
     @info "Writing balance constraint dual values to $results_dir"
 
     filename = "balance_duals.csv"
     file_path = joinpath(results_dir, filename)
 
-    balance_duals, node_ids, _ = _extract_balance_duals(system, scaling, var_cost_discount)
-
-    df = DataFrame(balance_duals, node_ids, copycols=false)
-    write_dataframe(file_path, df)
-    @debug "Wrote $(nrow(df)) time steps and $(length(node_ids)) nodes for balance constraints to CSV file: $file_path"
-
-    return nothing
-end
-
-
-"""
-    _extract_balance_duals(system::System, scaling::Float64; with_timedata::Bool=false)
-
-Extract and rescale balance constraint duals for all nodes.
-
-Returns `(duals, node_ids, timedata_vec)` where each element of `duals`
-is the rescaled dual vector for the corresponding node.
-When `with_timedata` is `true`, `timedata_vec` contains the `TimeData` for each node
-(for time-series reconstruction); otherwise it is `nothing`.
-"""
-function _extract_balance_duals(system::System, scaling::Float64, var_cost_discount::Float64; with_timedata::Bool=false)
     balance_duals = Vector{Vector{Float64}}()
     node_ids = Vector{Symbol}()
-    timedata_vec = with_timedata ? Vector{TimeData}() : nothing
 
     for node in filter(n -> n isa Node, system.locations)
         constraint = get_constraint_by_type(node, BalanceConstraint)
@@ -123,7 +99,7 @@ function _extract_balance_duals(system::System, scaling::Float64, var_cost_disco
             set_constraint_dual!(constraint, node)
         end
         
-        # Get the dictionary of dual values for all balance equations
+        # Get the dictornary of dual values for all balance equations
         duals_dict = constraint_dual(constraint)
         
         # Export only the :demand balance duals (skip if not present)
@@ -132,19 +108,22 @@ function _extract_balance_duals(system::System, scaling::Float64, var_cost_disco
         # Add node ID
         push!(node_ids, id(node))
 
-        # Compute subperiod weights and rescale dual values
+        # Compute subperiod weights for rescaling
         weights = Float64[subperiod_weight(node, current_subperiod(node, t)) for t in time_interval(node)]
 
         # Rescale dual values by subperiod weights
-        push!(balance_duals, scaling * duals_dict[:demand] ./ (weights .* var_cost_discount) )
-        with_timedata && push!(timedata_vec, node.timedata)
+        push!(balance_duals, duals_dict[:demand] ./ (weights .* scaling))
     end
 
-    return balance_duals, node_ids, timedata_vec
+    df = DataFrame(balance_duals, node_ids, copycols=false)
+    write_dataframe(file_path, df)
+    @debug "Wrote $(nrow(df)) time steps and $(length(node_ids)) nodes for balance constraints to CSV file: $file_path"
+
+    return nothing
 end
 
 """
-    write_co2_cap_duals(results_dir::AbstractString, system::System, scaling::Float64)
+    write_co2_cap_duals(results_dir::AbstractString, system::System, scaling::Float64=1.0)
 
 Write CO2 cap constraint dual values (carbon prices) and penalty costs to CSV file.
 
@@ -164,15 +143,14 @@ Long-format CSV with columns:
 
 # Examples
 ```julia
-write_co2_cap_duals("results/", system, 1.0)
+write_co2_cap_duals("results/", system)
 # Creates: results/co2_cap_duals.csv
 ```
 """
 function write_co2_cap_duals(
     results_dir::AbstractString,
     system::System,
-    scaling::Float64,
-    var_cost_discount::Float64
+    scaling::Float64=1.0
 )
     @info "Writing CO2 cap constraint dual values to $results_dir"
 
@@ -197,7 +175,7 @@ function write_co2_cap_duals(
         push!(node_ids, id(node))
 
         # Get CO2 shadow prices
-        co2_shadow_price = -scaling * dual(constraint) / var_cost_discount
+        co2_shadow_price = -dual(constraint) / scaling
         push!(co2_shadow_prices, co2_shadow_price)
 
         # Calculate penalty cost if slack variables exist

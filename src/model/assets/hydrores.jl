@@ -209,17 +209,13 @@ function make(asset_type::Type{HydroRes}, data::AbstractDict{Symbol,Any}, system
             (inflow_edge_data, :inflow_efficiency),
             (inflow_edge_data, :efficiency)
         ], 1.0)
-    @add_to_storage_balance(
-        hydrostor,
-        1 / discharge_efficiency * flow(discharge_edge),
-    )
-    @add_to_storage_balance(
-        hydrostor,
-        inflow_efficiency * flow(inflow_edge),
-    )
-    @add_to_storage_balance(
-        hydrostor,
-        flow(spill_edge),
+
+    hydrostor.balance_data = Dict(
+        :storage => Dict(
+            discharge_edge.id => 1 / discharge_efficiency,
+            inflow_edge.id => inflow_efficiency,
+            spill_edge.id => 1.0
+        )
     )
 
     return HydroRes(id,hydrostor,discharge_edge,inflow_edge,spill_edge)
