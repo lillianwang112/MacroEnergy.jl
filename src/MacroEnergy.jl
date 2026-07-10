@@ -48,6 +48,7 @@ abstract type Bauxite <: Commodity end ## tonnes
 abstract type IronOre <: Commodity end ## tonnes
 abstract type SteelScrap <: Commodity end ## tonnes
 abstract type CrudeSteel <: Commodity end ## tonnes
+abstract type DRI <: Commodity end ## tonnes
 abstract type Ammonia <: Commodity end ## MWh
 abstract type Methanol <: Commodity end ## MWh
 abstract type Nitrogen <: Commodity end ## tonnes
@@ -206,6 +207,9 @@ include("model/assets/hydrores.jl")
 include("model/assets/mustrun.jl")
 include("model/assets/upstreamemissions.jl")
 include("model/assets/downstreamemissions.jl")
+include("model/assets/transportemissions.jl")
+include("model/assets/steelmaking.jl")
+include("model/assets/drimaking.jl")
 include("model/assets/syntheticnaturalgas.jl")
 include("model/assets/syntheticliquidfuels.jl")
 include("model/assets/syntheticammonia.jl")
