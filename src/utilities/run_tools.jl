@@ -112,7 +112,10 @@ function run_case(
     planning_optimizer::DataType=HiGHS.Optimizer,
     subproblem_optimizer::DataType=HiGHS.Optimizer,
     planning_optimizer_attributes::Tuple=("solver" => "ipm", "run_crossover" => "off", "ipm_optimality_tolerance" => 1e-3),
-    subproblem_optimizer_attributes::Tuple=("solver" => "ipm", "run_crossover" => "on", "ipm_optimality_tolerance" => 1e-3)
+    subproblem_optimizer_attributes::Tuple=("solver" => "ipm", "run_crossover" => "on", "ipm_optimality_tolerance" => 1e-3),
+    # MGA
+    run_mga::Bool=false,
+    mga_variables::Vector{String}=String[]
 )
     # This will run when the Julia process closes. 
     # It may be overfill with the try-catch
@@ -128,20 +131,96 @@ function run_case(
         load_user_additions(case_path)
         refresh_user_type_registries!()
 
-        return Base.invokelatest(
-            _run_case_impl,
-            case_path,
-            lazy_load,
-            log_to_file,
-            log_file_path,
-            optimizer,
-            optimizer_env,
-            optimizer_attributes,
-            planning_optimizer,
-            subproblem_optimizer,
-            planning_optimizer_attributes,
-            subproblem_optimizer_attributes,
-        )
+        case = load_case(case_path; lazy_load=lazy_load)
+
+        # Upstream PR #253: inputs are scaled inside prepare_case!/load_case;
+        # unscale! in the finally block restores original units on all exit paths.
+        scaling = parameter_scaling_factor(get_settings(case))
+        try
+            # Create optimizer based on solution algorithm
+            optimizer_instance = if isa(solution_algorithm(case), Monolithic) || isa(solution_algorithm(case), Myopic)
+                create_optimizer(optimizer, optimizer_env, optimizer_attributes)
+            elseif isa(solution_algorithm(case), Benders)
+                create_optimizer_benders(planning_optimizer, subproblem_optimizer,
+                    planning_optimizer_attributes, subproblem_optimizer_attributes)
+            else
+                error("Unknown solution algorithm. Please check `SolutionAlgorithm` in `settings/case_settings.json`. Valid values are \"Monolithic\", \"Myopic\", and \"Benders\".")
+            end
+
+            # If Benders, create processes for subproblems optimization
+            # NOTE: upstream PR #230 changed arg order to (case_path, count)
+            if isa(solution_algorithm(case), Benders)
+                if case.settings.BendersSettings[:Distributed]
+                    number_of_subproblems = sum(length(system.time_data[:Electricity].subperiods) for system in case.systems)
+                    start_distributed_processes!(case_path, number_of_subproblems)
+                end
+            end
+
+            (case, solution) = solve_case(case, optimizer_instance)
+
+            if run_mga && isa(solution, BendersResults)
+                linking_variables_sub = Dict(sp[:subproblem_index] => sp[:linking_variables_sub] for sp in solution.op_subproblem)
+                setup = Dict(pairs(get_settings(case).BendersSettings))
+                mga_vars = isempty(mga_variables) ? name.(all_variables(solution.planning_problem)) : mga_variables
+                mga_output = MacroEnergySolvers.benders_mga(
+                    solution.planning_problem, solution.op_subproblem, linking_variables_sub, setup, solution, mga_vars)
+                if isnothing(mga_output)
+                    @warn "MGA returned nothing (Benders did not converge to a finite UB). Skipping MGA output."
+                    postprocess!(case, solution)
+                    if !isa(solution_algorithm(case), Myopic)
+                        output_path = length(case.systems) ≥ 1 ? create_output_path(case.systems[1], case_path) : case_path
+                        write_outputs(output_path, case, solution)
+                    end
+                    if isa(solution_algorithm(case), Benders) && get_settings(case).BendersSettings[:Distributed] && nprocs() > 1
+                        rmprocs(workers())
+                    end
+                    return case.systems, solution, nothing, nothing, nothing
+                end
+                mga_results, mga_vectors, mga_var_names = mga_output
+                # Writing the base-case outputs here is best-effort: benders_mga has already
+                # repeatedly re-objectived and re-solved the planning problem, so it may be left
+                # in a state where querying duals fails (JuMP.OptimizeNotCalled()). That failure
+                # must not prevent returning the MGA results below, which are already computed.
+                try
+                    postprocess!(case, solution)
+                    if !isa(solution_algorithm(case), Myopic)
+                        output_path = length(case.systems) ≥ 1 ? create_output_path(case.systems[1], case_path) : case_path
+                        write_outputs(output_path, case, solution)
+                    end
+                catch e
+                    @warn "Skipping base-case output writing after MGA: $e"
+                end
+                if isa(solution_algorithm(case), Benders) && get_settings(case).BendersSettings[:Distributed] && nprocs() > 1
+                    rmprocs(workers())
+                end
+                return case.systems, solution, mga_results, mga_vectors, mga_var_names
+            end
+
+            postprocess!(case, solution)
+
+            # Upstream PR #227: MyopicResults writes outputs per-period during iteration
+            if isa(solution, MyopicResults)
+                output_path = solution.output_path
+            else
+                output_path = length(case.systems) ≥ 1 ? create_output_path(case.systems[1], case_path) : case_path
+                write_outputs(output_path, case, solution)
+            end
+
+            # Upstream: copy log file into results directory for archiving
+            if log_to_file && isfile(log_file_path)
+                cp(log_file_path, joinpath(output_path, basename(log_file_path)); force=true)
+            end
+
+            if isa(solution_algorithm(case), Benders)
+                if case.settings.BendersSettings[:Distributed] && nprocs() > 1
+                    rmprocs(workers())
+                end
+            end
+
+            return case.systems, solution
+        finally
+            unscale!(case, scaling)
+        end
     catch e
         rethrow(e)
     finally

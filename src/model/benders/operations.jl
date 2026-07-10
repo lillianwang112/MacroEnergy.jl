@@ -258,3 +258,17 @@ function get_policy_constraints_to_relax(system::System)
     end 
     return policy_constraints
 end
+
+function update_with_subproblem_solutions!(subproblems::Union{Vector{Dict{Any, Any}},DistributedArrays.DArray}, results::NamedTuple)
+
+    # Only expect feasible subproblems if Benders converged optimally.
+    # If MAXITER/TIMELIMIT was reached with UB=Inf, the best planning sol may still have
+    # infeasible subproblems — using expect_feasible=true would crash before outputs are written.
+    expect_feasible = results.termination_status == "OPTIMAL"
+    subop_sol = MacroEnergySolvers.solve_subproblems(subproblems, results.planning_sol, expect_feasible)
+
+    results = (; results..., subop_sol = subop_sol)
+
+    return nothing
+
+end
