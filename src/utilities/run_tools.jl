@@ -110,7 +110,10 @@ function run_case(
     planning_optimizer::DataType=HiGHS.Optimizer,
     subproblem_optimizer::DataType=HiGHS.Optimizer,
     planning_optimizer_attributes::Tuple=("solver" => "ipm", "run_crossover" => "off", "ipm_optimality_tolerance" => 1e-3),
-    subproblem_optimizer_attributes::Tuple=("solver" => "ipm", "run_crossover" => "on", "ipm_optimality_tolerance" => 1e-3)
+    subproblem_optimizer_attributes::Tuple=("solver" => "ipm", "run_crossover" => "on", "ipm_optimality_tolerance" => 1e-3),
+    # MGA
+    run_mga::Bool=false,
+    mga_variables::Vector{String}=String[]
 )
     # This will run when the Julia process closes. 
     # It may be overfill with the try-catch
@@ -146,6 +149,48 @@ function run_case(
         end
 
         (case, solution) = solve_case(case, optimizer)
+
+        if run_mga && isa(solution, BendersResults)
+            linking_variables_sub = Dict(sp[:subproblem_index] => sp[:linking_variables_sub] for sp in solution.op_subproblem)
+            setup = Dict(pairs(get_settings(case).BendersSettings))
+            mga_vars = isempty(mga_variables) ? name.(all_variables(solution.planning_problem)) : mga_variables
+            mga_output = MacroEnergySolvers.benders_mga(
+                solution.planning_problem, solution.op_subproblem, linking_variables_sub, setup, solution, mga_vars)
+            if isnothing(mga_output)
+                @warn "MGA returned nothing (Benders did not converge to a finite UB). Skipping MGA output."
+                postprocess!(case, solution)
+                if !isa(solution_algorithm(case), Myopic)
+                    if length(case.systems) ≥ 1
+                        case_path = create_output_path(case.systems[1], case_path)
+                    end
+                    write_outputs(case_path, case, solution)
+                end
+                if isa(solution_algorithm(case), Benders) && get_settings(case).BendersSettings[:Distributed] && nprocs() > 1
+                    rmprocs(workers())
+                end
+                return case.systems, solution, nothing, nothing, nothing
+            end
+            mga_results, mga_vectors, mga_var_names = mga_output
+            # Writing the base-case outputs here is best-effort: benders_mga has already
+            # repeatedly re-objectived and re-solved the planning problem, so it may be left
+            # in a state where querying duals fails (JuMP.OptimizeNotCalled()). That failure
+            # must not prevent returning the MGA results below, which are already computed.
+            try
+                postprocess!(case, solution)
+                if !isa(solution_algorithm(case), Myopic)
+                    if length(case.systems) ≥ 1
+                        case_path = create_output_path(case.systems[1], case_path)
+                    end
+                    write_outputs(case_path, case, solution)
+                end
+            catch e
+                @warn "Skipping base-case output writing after MGA: $e"
+            end
+            if isa(solution_algorithm(case), Benders) && get_settings(case).BendersSettings[:Distributed] && nprocs() > 1
+                rmprocs(workers())
+            end
+            return case.systems, solution, mga_results, mga_vectors, mga_var_names
+        end
 
         postprocess!(case, solution)
 
