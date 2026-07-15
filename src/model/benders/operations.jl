@@ -89,12 +89,17 @@ function initialize_dist_subproblems!(system_decomp::Vector,opt::Dict,case_setti
 
     subproblems_all = distribute([Dict() for i in 1:length(system_decomp)]);
 
+    # Slice system_decomp into each worker's chunk on the controller *before* spawning,
+    # so only that worker's own systems are serialized and sent over the wire. Referencing
+    # the full system_decomp inside the @spawnat closure (the previous approach) captures
+    # and ships the entire decomposed system to every worker, since Julia closures capture
+    # whole variables, not the subset later indexed out of them.
     @sync for p in workers()
+        W_local = @fetchfrom p localindices(subproblems_all)[1];
+        system_chunk = system_decomp[W_local];
         @async @spawnat p begin
-            W_local = localindices(subproblems_all)[1];
-            system_local = [system_decomp[k] for k in W_local];
             optimizer = create_optimizer(opt[:solver], opt_env(opt[:solver]), opt[:attributes])
-            initialize_local_subproblems!(system_local,localpart(subproblems_all),W_local,optimizer,case_settings,include_subproblem_slacks);
+            initialize_local_subproblems!(system_chunk,localpart(subproblems_all),W_local,optimizer,case_settings,include_subproblem_slacks);
         end
     end
 
@@ -259,13 +264,13 @@ function get_policy_constraints_to_relax(system::System)
     return policy_constraints
 end
 
-function update_with_subproblem_solutions!(subproblems::Union{Vector{Dict{Any, Any}},DistributedArrays.DArray}, results::NamedTuple)
+function update_with_subproblem_solutions!(subproblems::Union{Vector{Dict{Any, Any}},DistributedArrays.DArray}, results::NamedTuple, elastic_slack::Bool=false)
 
-    # Only expect feasible subproblems if Benders converged optimally.
-    # If MAXITER/TIMELIMIT was reached with UB=Inf, the best planning sol may still have
-    # infeasible subproblems — using expect_feasible=true would crash before outputs are written.
-    expect_feasible = results.termination_status == "OPTIMAL"
-    subop_sol = MacroEnergySolvers.solve_subproblems(subproblems, results.planning_sol, expect_feasible)
+    # Use expect_feasible=false: the best planning solution is stored as Float64 in a Dict,
+    # and tiny floating-point differences when re-fixing linking variables can render a
+    # marginally feasible subproblem INFEASIBLE, crashing before any results are written.
+    # Pass elastic_slack through so the Big-M penalty is active if it was during Benders.
+    subop_sol = MacroEnergySolvers.solve_subproblems(subproblems, results.planning_sol, false, elastic_slack)
 
     results = (; results..., subop_sol = subop_sol)
 
