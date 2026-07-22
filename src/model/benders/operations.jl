@@ -86,21 +86,97 @@ function initialize_dist_subproblems!(system_decomp::Vector,opt::Dict,case_setti
 	## Start pre-solve timer
      
 	subproblem_generation_time = time()
+    diagnostics_enabled = lowercase(get(ENV, "MACROENERGY_DISTRIBUTED_BUILD_DIAG", "false")) in ("1", "true", "yes")
 
+    distribute_start = time()
     subproblems_all = distribute([Dict() for i in 1:length(system_decomp)]);
+    if diagnostics_enabled
+        @info(
+            "DIST_BUILD_DIAG phase=darray_ready " *
+            "elapsed=$(round(time() - distribute_start, digits=6)) " *
+            "workers=$(nworkers()) subproblems=$(length(system_decomp))"
+        )
+    end
 
     # Slice system_decomp into each worker's chunk on the controller *before* spawning,
     # so only that worker's own systems are serialized and sent over the wire. Referencing
     # the full system_decomp inside the @spawnat closure (the previous approach) captures
     # and ships the entire decomposed system to every worker, since Julia closures capture
     # whole variables, not the subset later indexed out of them.
-    @sync for p in workers()
+    construction_tasks = Task[]
+    for p in workers()
+        indices_start = time()
         W_local = @fetchfrom p localindices(subproblems_all)[1];
         system_chunk = system_decomp[W_local];
-        @async @spawnat p begin
-            optimizer = create_optimizer(opt[:solver], opt_env(opt[:solver]), opt[:attributes])
-            initialize_local_subproblems!(system_chunk,localpart(subproblems_all),W_local,optimizer,case_settings,include_subproblem_slacks);
-        end
+        indices_elapsed = time() - indices_start
+        first_index = isempty(W_local) ? 0 : first(W_local)
+        last_index = isempty(W_local) ? 0 : last(W_local)
+
+        push!(construction_tasks, @async let
+            p = p
+            W_local = W_local
+            system_chunk = system_chunk
+            indices_elapsed = indices_elapsed
+            first_index = first_index
+            last_index = last_index
+
+            dispatch_start = time()
+            if diagnostics_enabled
+                @info(
+                    "DIST_BUILD_DIAG phase=driver_dispatch worker=$p " *
+                    "first=$first_index last=$last_index count=$(length(W_local)) " *
+                    "indices_elapsed=$(round(indices_elapsed, digits=6)) epoch=$dispatch_start"
+                )
+            end
+
+            worker_timing = @fetchfrom p begin
+                remote_enter = time()
+
+                optimizer_start = time()
+                optimizer = create_optimizer(opt[:solver], opt_env(opt[:solver]), opt[:attributes])
+                optimizer_ready = time()
+
+                model_start = time()
+                initialize_local_subproblems!(
+                    system_chunk,
+                    localpart(subproblems_all),
+                    W_local,
+                    optimizer,
+                    case_settings,
+                    include_subproblem_slacks,
+                )
+                model_ready = time()
+
+                (
+                    worker = myid(),
+                    node = get(ENV, "SLURMD_NODENAME", get(ENV, "HOSTNAME", "unknown")),
+                    remote_enter = remote_enter,
+                    optimizer_seconds = optimizer_ready - optimizer_start,
+                    model_seconds = model_ready - model_start,
+                    worker_seconds = model_ready - remote_enter,
+                )
+            end
+
+            driver_received = time()
+            if diagnostics_enabled
+                dispatch_to_driver = driver_received - dispatch_start
+                transport_and_queue = dispatch_to_driver - worker_timing.worker_seconds
+                @info(
+                    "DIST_BUILD_DIAG phase=worker_complete worker=$(worker_timing.worker) " *
+                    "node=$(worker_timing.node) first=$first_index last=$last_index " *
+                    "dispatch_to_remote=$(round(worker_timing.remote_enter - dispatch_start, digits=6)) " *
+                    "optimizer=$(round(worker_timing.optimizer_seconds, digits=6)) " *
+                    "model=$(round(worker_timing.model_seconds, digits=6)) " *
+                    "worker_total=$(round(worker_timing.worker_seconds, digits=6)) " *
+                    "remote_to_driver=$(round(driver_received - worker_timing.remote_enter, digits=6)) " *
+                    "dispatch_to_driver=$(round(dispatch_to_driver, digits=6)) " *
+                    "transport_and_queue=$(round(transport_and_queue, digits=6))"
+                )
+            end
+        end)
+    end
+    @sync for task in construction_tasks
+        @async wait(task)
     end
 
 	p_id = workers();
@@ -108,11 +184,18 @@ function initialize_dist_subproblems!(system_decomp::Vector,opt::Dict,case_setti
 
     linking_variables_sub = [Dict() for k in 1:np_id];
 
+    linking_start = time()
     @sync for k in 1:np_id
         @async linking_variables_sub[k]= @fetchfrom p_id[k] get_local_linking_variables(localpart(subproblems_all))
     end
 
 	linking_variables_sub = merge(linking_variables_sub...);
+    if diagnostics_enabled
+        @info(
+            "DIST_BUILD_DIAG phase=linking_ready " *
+            "elapsed=$(round(time() - linking_start, digits=6)) entries=$(length(linking_variables_sub))"
+        )
+    end
 
     ## Record pre-solver time
 	subproblem_generation_time = time() - subproblem_generation_time
