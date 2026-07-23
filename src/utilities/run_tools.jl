@@ -33,12 +33,24 @@ a complete Macro workflow.
 - `planning_optimizer_attributes::Tuple`: Solver settings for the planning problem.
 - `subproblem_optimizer_attributes::Tuple`: Solver settings for the subproblems.
 
+## Modeling to Generate Alternatives (MGA)
+- `run_mga::Bool=false`: Run MGA after the baseline solve.
+- `mga_variables::Vector{String}=String[]`: Explicit MGA variables. When empty,
+  compatible capacity variables are aggregated by technology, zone or corridor,
+  component role, and period.
+- `mga_slack`, `mga_iterations`, `mga_method`, `mga_combo_ratio`, `mga_seed`:
+  Optional overrides. Benders-MGA otherwise uses the corresponding `MGA*` settings;
+  monolithic MGA uses its documented defaults.
+- `mga_checkpoint_dir`: Optional Benders-MGA checkpoint/output directory.
+
 # Returns
 - `case::Case`: A case object containing a vector of solved system objects (one per period) and the case settings
 - `solution`: The solution object (type depends on the solution algorithm: `Model` for 
   Monolithic, `MyopicResults` for Myopic (both Monolithic and Benders), `BendersModel`
   for Perfect Foresight + Benders). `MyopicResults.results` holds a `Vector` of per-period
   results when `ReturnModels=true`, or `nothing` when `ReturnModels=false`.
+- With `run_mga=true`, three additional values are returned: MGA result records,
+  the direction matrix, and the MGA variable/group names.
 
 # Examples
 
@@ -115,7 +127,13 @@ function run_case(
     subproblem_optimizer_attributes::Tuple=("solver" => "ipm", "run_crossover" => "on", "ipm_optimality_tolerance" => 1e-3),
     # MGA
     run_mga::Bool=false,
-    mga_variables::Vector{String}=String[]
+    mga_variables::Vector{String}=String[],
+    mga_slack::Union{Nothing,Float64}=nothing,
+    mga_iterations::Union{Nothing,Int}=nothing,
+    mga_method::Union{Nothing,Int}=nothing,
+    mga_combo_ratio::Union{Nothing,Float64}=nothing,
+    mga_seed::Union{Nothing,Int}=nothing,
+    mga_checkpoint_dir::Union{Nothing,AbstractString}=nothing,
 )
     # This will run when the Julia process closes. 
     # It may be overfill with the try-catch
@@ -158,38 +176,110 @@ function run_case(
 
             (case, solution) = solve_case(case, optimizer_instance)
 
-            if run_mga && isa(solution, BendersResults)
-                linking_variables_sub = Dict(sp[:subproblem_index] => sp[:linking_variables_sub] for sp in solution.op_subproblem)
+            if run_mga && isa(solution, BendersModel)
+                linking_variables_sub = solution.linking_variables_sub
                 setup = Dict(pairs(get_settings(case).BendersSettings))
-                mga_vars = isempty(mga_variables) ? name.(all_variables(solution.planning_problem)) : mga_variables
+                isnothing(mga_slack) || (setup[:MGASlack] = mga_slack)
+                isnothing(mga_iterations) || (setup[:MGAIterations] = mga_iterations)
+                isnothing(mga_method) || (setup[:MGAMethod] = mga_method)
+                isnothing(mga_combo_ratio) || (setup[:MGAComboRatio] = mga_combo_ratio)
+                isnothing(mga_seed) || (setup[:MGARandomSeed] = mga_seed)
+
+                # Persist the converged Benders baseline while the distributed
+                # subproblem models still contain its matching operational solution.
+                postprocess!(case, solution)
+                base_output_path = length(case.systems) >= 1 ?
+                    create_output_path(case.systems[1], case_path) : case_path
+                write_outputs(base_output_path, case, solution)
+
+                if isempty(mga_variables)
+                    mga_groups, mga_refs = _mga_setup!(
+                        solution.planning_problem,
+                        case;
+                        variable_key=:vMGA_BENDERS,
+                        constraint_prefix="cMGACapEquivBenders",
+                    )
+                    isempty(mga_refs) && error("Benders-MGA found no capacity groups to diversify")
+                    mga_vars = name.(mga_refs)
+                    @info("Benders-MGA: defaulting to $(length(mga_vars)) dimensionally separated capacity groups")
+                    @debug("Benders-MGA groups: $(join(mga_groups, ", "))")
+                else
+                    mga_vars = copy(mga_variables)
+                end
+
+                run_label = get(ENV, "SLURM_JOB_ID", Dates.format(now(), "yyyymmdd_HHMMSS"))
+                checkpoint_dir = isnothing(mga_checkpoint_dir) ?
+                    joinpath(case_path, "mga_results", "run_$(run_label)") :
+                    abspath(mga_checkpoint_dir)
+                mkpath(checkpoint_dir)
+
+                original_planning_sol = solution.planning_sol
+                original_subop_sol = solution.subop_sol
+                function persist_mga_iteration(iteration, result, vector, variable_names)
+                    if !result.converged
+                        @warn("MGA iteration $iteration ended with status=$(result.status); numeric checkpoint retained, detailed outputs skipped")
+                        return nothing
+                    end
+                    iteration_path = joinpath(checkpoint_dir, "outputs", "iteration_$(lpad(iteration, 4, '0'))")
+                    solution.planning_sol = result.planning_sol
+                    try
+                        solution.planning_solution_updater(result.planning_sol.values)
+                        # Elastic Benders solves re-fix their slack variable after
+                        # extracting a cut, which invalidates the JuMP primal result.
+                        # Output extraction reads the operational JuMP models directly,
+                        # so perform one non-elastic verification solve at the converged
+                        # direction before writing. This also guarantees that the numeric
+                        # costs and detailed time series describe the same point.
+                        solution.subop_sol = MacroEnergySolvers.solve_subproblems(
+                            solution.subproblems,
+                            result.planning_sol,
+                            true,
+                            false,
+                        )
+                        postprocess!(case, solution)
+                        write_outputs(iteration_path, case, solution)
+                        @info("Wrote durable MGA outputs for iteration $iteration to $iteration_path")
+                    finally
+                        solution.planning_sol = original_planning_sol
+                        solution.subop_sol = original_subop_sol
+                        solution.planning_solution_updater(original_planning_sol.values)
+                        postprocess!(case, solution)
+                    end
+                    return nothing
+                end
                 mga_output = MacroEnergySolvers.benders_mga(
-                    solution.planning_problem, solution.op_subproblem, linking_variables_sub, setup, solution, mga_vars)
+                    solution.planning_problem,
+                    solution.subproblems,
+                    linking_variables_sub,
+                    setup,
+                    solution,
+                    mga_vars;
+                    checkpoint_dir=checkpoint_dir,
+                    iteration_callback=persist_mga_iteration,
+                )
+
+                # benders_mga leaves the operational models at the last MGA point.
+                # Re-solve once at the baseline incumbent so the returned BendersModel
+                # has planning fields, case capacities, and operational model values
+                # that all describe the same solution.
+                solution.planning_sol = original_planning_sol
+                solution.planning_solution_updater(original_planning_sol.values)
+                @info("Restoring distributed subproblems to the baseline Benders incumbent")
+                solution.subop_sol = MacroEnergySolvers.solve_subproblems(
+                    solution.subproblems,
+                    original_planning_sol,
+                    true,
+                )
+                postprocess!(case, solution)
+
                 if isnothing(mga_output)
                     @warn "MGA returned nothing (Benders did not converge to a finite UB). Skipping MGA output."
-                    postprocess!(case, solution)
-                    if !isa(solution_algorithm(case), Myopic)
-                        output_path = length(case.systems) ≥ 1 ? create_output_path(case.systems[1], case_path) : case_path
-                        write_outputs(output_path, case, solution)
-                    end
                     if isa(solution_algorithm(case), Benders) && get_settings(case).BendersSettings[:Distributed] && nprocs() > 1
                         rmprocs(workers())
                     end
                     return case.systems, solution, nothing, nothing, nothing
                 end
                 mga_results, mga_vectors, mga_var_names = mga_output
-                # Writing the base-case outputs here is best-effort: benders_mga has already
-                # repeatedly re-objectived and re-solved the planning problem, so it may be left
-                # in a state where querying duals fails (JuMP.OptimizeNotCalled()). That failure
-                # must not prevent returning the MGA results below, which are already computed.
-                try
-                    postprocess!(case, solution)
-                    if !isa(solution_algorithm(case), Myopic)
-                        output_path = length(case.systems) ≥ 1 ? create_output_path(case.systems[1], case_path) : case_path
-                        write_outputs(output_path, case, solution)
-                    end
-                catch e
-                    @warn "Skipping base-case output writing after MGA: $e"
-                end
                 if isa(solution_algorithm(case), Benders) && get_settings(case).BendersSettings[:Distributed] && nprocs() > 1
                     rmprocs(workers())
                 end
@@ -215,6 +305,23 @@ function run_case(
                 if case.settings.BendersSettings[:Distributed] && nprocs() > 1
                     rmprocs(workers())
                 end
+            end
+
+            if run_mga && isa(solution, Model)
+                mga_output = run_monolithic_mga(
+                    solution, case, case_path, mga_variables;
+                    mga_slack=something(mga_slack, 0.1),
+                    mga_iterations=something(mga_iterations, 100),
+                    mga_method=something(mga_method, 1),
+                    mga_combo_ratio=something(mga_combo_ratio, 0.25),
+                    mga_seed=something(mga_seed, 42),
+                )
+                if isnothing(mga_output)
+                    @warn "Monolithic MGA returned nothing. Returning base solution only."
+                    return case.systems, solution
+                end
+                mga_results, mga_vectors, mga_var_names = mga_output
+                return case.systems, solution, mga_results, mga_vectors, mga_var_names
             end
 
             return case.systems, solution

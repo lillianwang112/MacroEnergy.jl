@@ -173,6 +173,176 @@ function update_with_planning_solution!(e::AbstractEdge, planning_variable_value
     end
 end
 
+# `update_with_planning_solution!` intentionally replaces the JuMP expressions stored
+# on a case with numeric solution values. That is sufficient for a single Benders
+# result, but MGA needs to render several planning solutions through the same case.
+# Capture the original expressions before the first update so they can be evaluated
+# repeatedly without copying the (potentially very large) case.
+abstract type AbstractPlanningSolutionBinding end
+
+struct StorageCapacityBinding <: AbstractPlanningSolutionBinding
+    storage::AbstractStorage
+    capacity
+    new_capacity
+    retired_capacity
+    period::Int
+end
+
+struct LongDurationStorageBinding <: AbstractPlanningSolutionBinding
+    storage::LongDurationStorage
+    storage_initial::Vector{Pair{Int,Any}}
+    storage_change::Vector{Pair{Int,Any}}
+end
+
+struct EdgeCapacityBinding <: AbstractPlanningSolutionBinding
+    edge::AbstractEdge
+    capacity
+    new_capacity
+    retired_capacity
+    retrofitted_capacity
+    period::Int
+end
+
+
+struct PolicyBudgetBinding <: AbstractPlanningSolutionBinding
+    node::Node
+    key::Symbol
+    variables::Vector{Any}
+end
+
+struct PlanningSolutionUpdater
+    bindings::Vector{AbstractPlanningSolutionBinding}
+end
+
+_planning_solution_value(x::Real, ::AbstractDict) = Float64(x)
+_planning_solution_value(x, values::AbstractDict) =
+    JuMP.value(variable -> values[JuMP.name(variable)], x)
+
+function (updater::PlanningSolutionUpdater)(values::AbstractDict)
+    for binding in updater.bindings
+        apply_planning_solution!(binding, values)
+    end
+    return nothing
+end
+
+function apply_planning_solution!(binding::StorageCapacityBinding, values::AbstractDict)
+    storage = binding.storage
+    storage.capacity = _planning_solution_value(binding.capacity, values)
+    storage.new_capacity = _planning_solution_value(binding.new_capacity, values)
+    storage.retired_capacity = _planning_solution_value(binding.retired_capacity, values)
+    storage.new_capacity_track[binding.period] = storage.new_capacity
+    storage.retired_capacity_track[binding.period] = storage.retired_capacity
+    return nothing
+end
+
+function apply_planning_solution!(binding::LongDurationStorageBinding, values::AbstractDict)
+    storage = binding.storage
+    storage.storage_initial = Dict(
+        index => _planning_solution_value(variable, values)
+        for (index, variable) in binding.storage_initial
+    )
+    storage.storage_change = Dict(
+        index => _planning_solution_value(variable, values)
+        for (index, variable) in binding.storage_change
+    )
+    return nothing
+end
+
+function apply_planning_solution!(binding::EdgeCapacityBinding, values::AbstractDict)
+    edge = binding.edge
+    edge.capacity = _planning_solution_value(binding.capacity, values)
+    edge.new_capacity = _planning_solution_value(binding.new_capacity, values)
+    edge.retired_capacity = _planning_solution_value(binding.retired_capacity, values)
+    edge.retrofitted_capacity = _planning_solution_value(binding.retrofitted_capacity, values)
+    edge.new_capacity_track[binding.period] = edge.new_capacity
+    edge.retired_capacity_track[binding.period] = edge.retired_capacity
+    edge.retrofitted_capacity_track[binding.period] = edge.retrofitted_capacity
+    return nothing
+end
+
+function apply_planning_solution!(binding::PolicyBudgetBinding, values::AbstractDict)
+    binding.node.policy_budgeting_vars[binding.key] = [
+        _planning_solution_value(variable, values) for variable in binding.variables
+    ]
+    return nothing
+end
+
+function make_planning_solution_updater(target::Union{Case,System})
+    bindings = AbstractPlanningSolutionBinding[]
+    collect_planning_solution_bindings!(bindings, target)
+    return PlanningSolutionUpdater(bindings)
+end
+
+function collect_planning_solution_bindings!(bindings, case::Case)
+    for system in case.systems
+        collect_planning_solution_bindings!(bindings, system)
+    end
+    return nothing
+end
+
+function collect_planning_solution_bindings!(bindings, system::System)
+    for asset in system.assets
+        collect_planning_solution_bindings!(bindings, asset)
+    end
+    return nothing
+end
+
+function collect_planning_solution_bindings!(bindings, asset::AbstractAsset)
+    for field in fieldnames(typeof(asset))
+        collect_planning_solution_bindings!(bindings, getfield(asset, field))
+    end
+    return nothing
+end
+
+collect_planning_solution_bindings!(bindings, ::Transformation) = nothing
+
+function collect_planning_solution_bindings!(bindings, node::Node)
+    for constraint in node.constraints
+        constraint isa PolicyConstraint || continue
+        key = Symbol(string(typeof(constraint)) * "_Budget")
+        variables = node.policy_budgeting_vars[key]
+        push!(bindings, PolicyBudgetBinding(
+            node,
+            key,
+            Any[variables[w] for w in subperiod_indices(node)],
+        ))
+    end
+    return nothing
+end
+
+function collect_planning_solution_bindings!(bindings, storage::AbstractStorage)
+    if has_capacity(storage)
+        push!(bindings, StorageCapacityBinding(
+            storage,
+            storage.capacity,
+            storage.new_capacity,
+            storage.retired_capacity,
+            period_index(storage),
+        ))
+    end
+    if storage isa LongDurationStorage
+        push!(bindings, LongDurationStorageBinding(
+            storage,
+            Pair{Int,Any}[r => storage.storage_initial[r] for r in modeled_subperiods(storage)],
+            Pair{Int,Any}[w => storage.storage_change[w] for w in subperiod_indices(storage)],
+        ))
+    end
+    return nothing
+end
+
+function collect_planning_solution_bindings!(bindings, edge::AbstractEdge)
+    has_capacity(edge) || return nothing
+    push!(bindings, EdgeCapacityBinding(
+        edge,
+        edge.capacity,
+        edge.new_capacity,
+        edge.retired_capacity,
+        edge.retrofitted_capacity,
+        period_index(edge),
+    ))
+    return nothing
+end
+
 function add_feasibility_constraints!(system::System, model::Model)
     all_storages = get_storages(system)
     for g in all_storages

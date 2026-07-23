@@ -33,7 +33,19 @@ function default_benders_settings()
         :IntegerInvestment => false,
         :Distributed => false,
         :ExpectFeasibleSubproblems => false,
-        :IncludeSubproblemSlacksAutomatically => false
+        :IncludeSubproblemSlacksAutomatically => false,
+        :MGASlack => 0.1,
+        :MGAIterations => 100,
+        :MGARelaxBudget => 0.0,
+        :MGARequireOptimalBenders => true,
+        :MGAAllowUnsafeVariables => false,
+        :MGAContinueOnFailure => false,
+        :MGARetainBendersCuts => 2,
+        :MGAMaxCuts => 100,
+        :MGAMethod => 1,
+        :MGAComboRatio => 0.25,
+        :MGARandomSeed => 42,
+        :MGAVectorSortMethod => "none"
     )
 end
 
@@ -227,6 +239,24 @@ function validate_benders_settings(benders_settings::AbstractDict{Symbol,Any})
     @assert isa(benders_settings[:Distributed], Bool)
     @assert isa(benders_settings[:ExpectFeasibleSubproblems], Bool)
     @assert isa(benders_settings[:IncludeSubproblemSlacksAutomatically], Bool)
+    @assert isa(benders_settings[:MGASlack], Number) && benders_settings[:MGASlack] >= 0
+    @assert isa(benders_settings[:MGAIterations], Int) && benders_settings[:MGAIterations] > 0
+    if haskey(benders_settings, :MGAMaxIter)
+        @assert isa(benders_settings[:MGAMaxIter], Int) && benders_settings[:MGAMaxIter] > 0
+    end
+    if haskey(benders_settings, :MGAMaxCpuTime)
+        @assert isa(benders_settings[:MGAMaxCpuTime], Number) && benders_settings[:MGAMaxCpuTime] > 0
+    end
+    @assert isa(benders_settings[:MGARelaxBudget], Number) && benders_settings[:MGARelaxBudget] >= 0
+    @assert isa(benders_settings[:MGARequireOptimalBenders], Bool)
+    @assert isa(benders_settings[:MGAAllowUnsafeVariables], Bool)
+    @assert isa(benders_settings[:MGAContinueOnFailure], Bool)
+    @assert isa(benders_settings[:MGARetainBendersCuts], Int) && benders_settings[:MGARetainBendersCuts] in 1:4
+    @assert isa(benders_settings[:MGAMaxCuts], Int) && benders_settings[:MGAMaxCuts] >= 0
+    @assert isa(benders_settings[:MGAMethod], Int) && benders_settings[:MGAMethod] in 0:3
+    @assert isa(benders_settings[:MGAComboRatio], Number) && 0 <= benders_settings[:MGAComboRatio] <= 1
+    @assert isa(benders_settings[:MGARandomSeed], Int)
+    @assert benders_settings[:MGAVectorSortMethod] in ("none", "angle", "nearest-neighbor")
 end
 
 function validate_myopic_settings(myopic_settings::AbstractDict{Symbol,Any})

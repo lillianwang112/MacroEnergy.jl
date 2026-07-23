@@ -85,7 +85,7 @@ function JuMP.optimize!(bm::BendersModel)
     )
 
     # update case or system with the best planning solution found by Benders
-    update_with_planning_solution!(bm.update_target, raw.planning_sol.values)
+    bm.planning_solution_updater(raw.planning_sol.values)
 
     @info "Perform a final solve of the subproblems to extract the operational decisions corresponding to the best planning solution."
     bm.planning_sol = raw.planning_sol

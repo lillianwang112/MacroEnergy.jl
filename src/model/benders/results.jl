@@ -34,6 +34,8 @@ It mirrors JuMP's `Model` pattern:
 # Fields
 - `settings::NamedTuple`: The case settings loaded from `case_settings.json`.
 - `update_target::Union{Case, System}`: The object (case or system) to be updated with the planning solution after optimization (e.g. final capacity values, policy constraints, etc.).
+- `planning_solution_updater::PlanningSolutionUpdater`: A reusable mapping from the
+  planning model's JuMP expressions to fields on `update_target`.
 - `planning_problem::Model`: The JuMP model representing the master problem (planning problem).
 - `subproblems::Union{Vector{Dict{Any, Any}}, DistributedArrays.DArray}`: A vector (or distributed array) of dictionaries, each containing a JuMP model for a subproblem and its associated data.
 - `linking_variables_sub::Dict`: A dictionary of the linking variables in the subproblems that connect to the planning problem.
@@ -44,6 +46,7 @@ It mirrors JuMP's `Model` pattern:
 mutable struct BendersModel
     settings::NamedTuple
     update_target::Union{Case, System}
+    planning_solution_updater::PlanningSolutionUpdater
     planning_problem::Model
     subproblems::Union{Vector{Dict{Any, Any}}, DistributedArrays.DArray}
     linking_variables_sub::Dict
@@ -55,4 +58,37 @@ end
 # Convenience constructor for BendersModel when planning_sol, subop_sol, and convergence are not yet available
 # they will be populated after optimize! is called
 BendersModel(settings, target, planning_problem, subproblems, linking_variables_sub) =
-    BendersModel(settings, target, planning_problem, subproblems, linking_variables_sub, nothing, nothing, nothing)
+    BendersModel(
+        settings,
+        target,
+        make_planning_solution_updater(target),
+        planning_problem,
+        subproblems,
+        linking_variables_sub,
+        nothing,
+        nothing,
+        nothing,
+    )
+
+# Preserve the former full-constructor signature for downstream callers while
+# initializing the reusable solution mapping introduced for multi-direction MGA.
+BendersModel(
+    settings,
+    target,
+    planning_problem,
+    subproblems,
+    linking_variables_sub,
+    planning_sol,
+    subop_sol,
+    convergence,
+) = BendersModel(
+    settings,
+    target,
+    make_planning_solution_updater(target),
+    planning_problem,
+    subproblems,
+    linking_variables_sub,
+    planning_sol,
+    subop_sol,
+    convergence,
+)

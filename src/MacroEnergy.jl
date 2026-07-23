@@ -186,6 +186,7 @@ include("model/myopic.jl")
 include_all_in_folder("model/constraints")
 include_all_in_folder("model/benders")
 include("model/solver.jl")
+include("utilities/mga.jl")
 
 include("utilities/postprocessing.jl")
 
@@ -341,6 +342,7 @@ export AbstractAsset,
     postprocess!,
     RampingLimitConstraint,
     run_case,
+    run_monolithic_mga,
     solve_case,
     Steam,
     SteelScrap,
