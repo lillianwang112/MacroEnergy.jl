@@ -10,7 +10,7 @@ using JuMP
 using HiGHS
 using Revise
 using InteractiveUtils
-using Printf: @printf
+using Printf: @printf, @sprintf
 using MacroEnergyScaling
 using MacroEnergySolvers
 using Pkg
@@ -159,6 +159,7 @@ include("utilities/default_data.jl")
 include("utilities/download_examples.jl")
 include("utilities/economics.jl")
 include("utilities/logging.jl")
+include("utilities/mga.jl")
 include("utilities/model_templates.jl")
 include("utilities/run_tools.jl")
 include("utilities/user_additions.jl")
@@ -326,6 +327,7 @@ export AbstractAsset,
     MinStorageLevelConstraint,
     MinInitStorageLevelConstraint,
     MinUpTimeConstraint,
+    MGAGroupSpec,
     MustRun,
     MustRunConstraint,
     NaturalGas,
@@ -337,6 +339,7 @@ export AbstractAsset,
     postprocess!,
     RampingLimitConstraint,
     run_case,
+    run_monolithic_mga,
     solve_case,
     Steam,
     SteelScrap,
@@ -374,6 +377,7 @@ export AbstractAsset,
     write_storage_level,
     write_curtailment,
     write_full_timeseries,
+    write_mga_capacity_outputs,
     write_time_weights,
     template_system,
     template_node,
