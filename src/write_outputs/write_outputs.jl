@@ -21,6 +21,43 @@ function write_outputs(
 end
 
 """
+    write_mga_capacity_outputs(output_path, case, model)
+
+Write only `capacity.csv` (plus case settings) for an MGA alternative. This is
+useful for large sweeps whose analysis needs regional investment results but
+not operational time-series outputs.
+"""
+function write_mga_capacity_outputs(
+    output_path::AbstractString,
+    case::Case,
+    _model::Model,
+)
+    num_periods = number_of_periods(case)
+    periods = get_periods(case)
+    scaling = parameter_scaling_factor(get_settings(case))
+    capacity_summaries = Vector{DataFrame}(undef, num_periods)
+
+    for (period_index, system) in enumerate(periods)
+        results_dir = mkpath_for_period(output_path, num_periods, period_index)
+        capacity_summaries[period_index] = write_capacity(
+            joinpath(results_dir, "capacity.csv"),
+            system,
+            scaling,
+        )
+    end
+
+    if num_periods > 1
+        write_capacity_summary(
+            output_path,
+            capacity_summaries,
+            get_output_layout(periods[1], :CapacitySummary),
+        )
+    end
+    write_settings(case, joinpath(output_path, "settings.json"))
+    return nothing
+end
+
+"""
 Write results for a single Myopic iteration when using Myopic as expansion horizon and Monolithic as solution algorithm.
 """
 function write_outputs(

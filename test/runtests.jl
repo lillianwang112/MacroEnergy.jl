@@ -82,5 +82,10 @@ with_logger(test_logger) do
     Test.@testset verbose = true "Myopic Functionality" begin
         include("test_myopic.jl")
     end
+
+    Test.@testset verbose = true "GenX-equivalent Modeling to Generate Alternatives" begin
+        include("test_mga.jl")
+        include("test_mga_genx.jl")
+    end
     return nothing
 end
