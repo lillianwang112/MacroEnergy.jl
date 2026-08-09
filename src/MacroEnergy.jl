@@ -157,6 +157,8 @@ include("utilities/default_data.jl")
 include("utilities/download_examples.jl")
 include("utilities/economics.jl")
 include("utilities/logging.jl")
+include("utilities/mga_quantities.jl")
+include("utilities/mga.jl")
 include("utilities/model_templates.jl")
 include("utilities/run_tools.jl")
 include("utilities/user_additions.jl")
@@ -240,6 +242,7 @@ include("config/case_settings.jl")
 include_all_in_folder("load_inputs")
 
 include_all_in_folder("write_outputs/")
+include("utilities/mga_genx.jl")
 
 export AbstractAsset,
     AbstractConstraintConfig,
@@ -297,8 +300,10 @@ export AbstractAsset,
     ThermalHeating,
     ThermalSteam,
     GasStorage,
+    GenXMGAResourceSpec,
     get_asset_by_id,
     get_assets_sametype,
+    genx_mga_quantities,
     get_optimal_capacity, 
     get_optimal_curtailment,
     get_optimal_discounted_costs,
@@ -338,6 +343,10 @@ export AbstractAsset,
     MinStorageLevelConstraint,
     MinInitStorageLevelConstraint,
     MinUpTimeConstraint,
+    MGAGroupSpec,
+    combine_mga_quantities,
+    MGAQuantitySpec,
+    MGAQuantityTerm,
     MustRun,
     MustRunConstraint,
     NaturalGas,
@@ -351,6 +360,8 @@ export AbstractAsset,
     RampingLimitConstraint,
     run_case,
     time_domain_reduction,
+    run_genx_mga,
+    run_monolithic_mga,
     solve_case,
     SolveFailed,
     Steam,
@@ -390,6 +401,7 @@ export AbstractAsset,
     write_storage_level,
     write_curtailment,
     write_full_timeseries,
+    write_mga_capacity_outputs,
     write_time_weights,
     template_system,
     template_node,

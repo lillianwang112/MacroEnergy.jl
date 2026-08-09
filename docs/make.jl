@@ -37,6 +37,7 @@ const pages = [
             "Configuring Settings" => "Guides/User Guide/user_settings.md",
             "Running Models" => "Guides/User Guide/user_run_model.md",
             "Solution Modes" => "Guides/User Guide/user_solution_modes.md",
+            "GenX-equivalent monolithic MGA" => "Guides/User Guide/user_monolithic_mga.md",
             "Writing Results" => "Guides/User Guide/user_write_results.md",
             "Using Multi-Period Models" => "Guides/User Guide/user_multiperiod.md",
             "Exploring the Asset library" => "Guides/User Guide/user_using_asset_libary.md",
@@ -56,6 +57,7 @@ const pages = [
             "Creating a Constraint" => "Guides/Developer Guide/dev_create_constraint.md",
             "Type Hierarchy" => "Guides/Developer Guide/2_type_hierarchy.md",
             "Running the Test Suite" => "Guides/Developer Guide/dev_running_tests.md",
+            "Monolithic MGA design" => "Guides/Developer Guide/monolithic_mga_design.md",
         ],
     ],
     "Assets" => "Assets/assets_guide.md",
@@ -144,6 +146,7 @@ const pages = [
         "Constraint utilities" => "References/ref_constraints.md",
         "Downloading examples" => "References/ref_download_examples.md",
         "Running a Macro Model" => "References/ref_run_case.md",
+        "Modeling to Generate Alternatives" => "References/ref_mga.md",
         # "Asset Library" => "References/2_assets.md", TODO: think if we should include this
     ],
     "Appendix" => [

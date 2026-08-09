@@ -107,5 +107,10 @@ with_logger(test_logger) do
     Test.@testset "Benchmark tooling" begin
         include("test_benchmark_runner.jl")
     end
+
+    Test.@testset verbose = true "GenX-equivalent Modeling to Generate Alternatives" begin
+        include("test_mga.jl")
+        include("test_mga_genx.jl")
+    end
     return nothing
 end
