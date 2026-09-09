@@ -10,7 +10,9 @@
             "edges": {
                 "co2_edge": {
                     "unidirectional": true,
-                    "has_capacity": false
+                    "has_capacity": false,
+                    "mga": true,
+                    "mga_group": "direct carbon emissions"
                 },
                 "elec_edge": {
                     "unidirectional": true,
@@ -18,7 +20,9 @@
                 },
                 "fuel_edge": {
                     "unidirectional": true,
-                    "has_capacity": false
+                    "has_capacity": false,
+                    "mga": true,
+                    "mga_group": "natural gas use"
                 }
             }
         },

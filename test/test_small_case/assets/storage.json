@@ -3,7 +3,9 @@
         "type": "Battery",
         "global_data": {
             "storage": {
-                "commodity": "Electricity"
+                "commodity": "Electricity",
+                "mga": true,
+                "mga_group": "battery energy"
             },
             "edges": {
                 "discharge_edge": {

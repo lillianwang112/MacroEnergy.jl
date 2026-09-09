@@ -18,6 +18,8 @@
                 "id": "MA_solar_pv",
                 "edges": {
                     "edge": {
+                        "mga": true,
+                        "mga_group": "solar",
                         "can_retire": true,
                         "can_expand": true,
                         "constraints": {
@@ -44,6 +46,8 @@
                 "id": "CT_onshore_wind",
                 "edges": {
                     "edge": {
+                        "mga": true,
+                        "mga_group": "onshore wind",
                         "can_retire": true,
                         "can_expand": true,
                         "constraints": {
@@ -70,6 +74,8 @@
                 "id": "CT_solar_pv",
                 "edges": {
                     "edge": {
+                        "mga": true,
+                        "mga_group": "solar",
                         "can_retire": true,
                         "can_expand": true,
                         "constraints": {
@@ -96,6 +102,8 @@
                 "id": "ME_onshore_wind",
                 "edges": {
                     "edge": {
+                        "mga": true,
+                        "mga_group": "onshore wind",
                         "can_retire": true,
                         "can_expand": true,
                         "constraints": {
