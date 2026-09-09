@@ -19,6 +19,8 @@ macro AbstractEdgeBaseAttributes()
         fixed_om_cost::Float64 = $edge_defaults[:fixed_om_cost]
         flow::JuMPVariable = Vector{VariableRef}()
         has_capacity::Bool = $edge_defaults[:has_capacity]
+        mga::Bool = $edge_defaults[:mga]
+        mga_group::Union{Missing,Symbol} = $edge_defaults[:mga_group]
         integer_decisions::Bool = $edge_defaults[:integer_decisions]
         investment_cost::Float64 = $edge_defaults[:investment_cost]
         is_retrofit::Bool = $edge_defaults[:is_retrofit]
@@ -84,6 +86,8 @@ abstract type EdgeWithoutUC{T} <: AbstractEdge{T} end
     - fixed_om_cost::Float64: Fixed operation and maintenance costs
     - flow::Union{JuMPVariable,Vector{Float64}}: Flow of commodity `T` through the edge at each timestep
     - has_capacity::Bool: Whether the edge has capacity variables
+    - mga::Bool: Whether the edge is available to MGA
+    - mga_group::Union{Missing,Symbol}: Technology group used for MGA results
     - integer_decisions::Bool: Whether capacity decisions must be integer
     - investment_cost::Float64: CAPEX per unit of new capacity
     - loss_fraction::Vector{Float64}: Fraction of flow lost during transmission, it can be time-dependent.
@@ -126,6 +130,8 @@ end
     - fixed_om_cost::Float64: Fixed operation and maintenance costs
     - flow::Union{JuMPVariable,Vector{Float64}}: Flow of commodity `T` through the edge at each timestep
     - has_capacity::Bool: Whether the edge has capacity variables
+    - mga::Bool: Whether the edge is available to MGA
+    - mga_group::Union{Missing,Symbol}: Technology group used for MGA results
     - integer_decisions::Bool: Whether capacity decisions must be integer
     - investment_cost::Float64: CAPEX per unit of new capacity
     - loss_fraction::Vector{Float64}: Fraction of flow lost during transmission, it can be time-dependent.
@@ -312,6 +318,8 @@ fixed_om_cost(e::AbstractEdge) = e.fixed_om_cost;
 flow(e::AbstractEdge) = e.flow;
 flow(e::AbstractEdge, t::Int64) = flow(e)[t];
 has_capacity(e::AbstractEdge) = e.has_capacity;
+mga(e::AbstractEdge) = e.mga;
+mga_group(e::AbstractEdge) = e.mga_group;
 id(e::AbstractEdge) = e.id;
 integer_decisions(e::AbstractEdge) = e.integer_decisions;
 investment_cost(e::AbstractEdge) = e.investment_cost;
@@ -549,6 +557,8 @@ end
     - fixed_om_cost::Float64: Fixed operation and maintenance costs
     - flow::Union{JuMPVariable,Vector{Float64}}: Flow of commodity through the edge at each timestep
     - has_capacity::Bool: Whether the edge has capacity variables
+    - mga::Bool: Whether the edge is available to MGA
+    - mga_group::Union{Missing,Symbol}: Technology group used for MGA results
     - integer_decisions::Bool: Whether capacity decisions must be integer
     - investment_cost::Float64: CAPEX per unit of new capacity
     - loss_fraction::Float64: Fraction of flow lost during transmission

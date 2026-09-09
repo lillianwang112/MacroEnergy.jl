@@ -1,110 +1,61 @@
-# GenX-equivalent monolithic MGA design
+# Monolithic MGA design
 
-This implementation adds GenX-style capacity and annual-generation MGA to a
-perfect-foresight monolithic MacroEnergy model.
+The MGA implementation is contained in `src/utilities/mga.jl`. It operates on
+an already solved monolithic, perfect-foresight JuMP model.
 
-## Files
+## Input selection
 
-```text
-src/utilities/mga_quantities.jl  What quantity is being optimized?
-src/utilities/mga.jl             How is the MGA search performed safely?
-src/utilities/mga_genx.jl        How is the GenX formulation represented in MacroEnergy?
-```
+Edges and storage components carry two input fields: `mga` selects the
+component, and `mga_group` names the pathway quantity it contributes to. The
+input loader stores these values before model generation. MGA connects them to
+JuMP variables only after those variables have been created.
 
-`mga_quantities.jl` represents objectives such as capacity or annual generation
-as named weighted sums of model variables and records which variables they use.
-`mga.jl` is the general solve engine: it manages the cost budget, repeated
-solves, status checks, outputs, and restoration of the original objective.
-`mga_genx.jl` maps GenX resource groups onto MacroEnergy assets and defines the
-GenX capacity, annual-generation, and paired-direction behavior.
+This keeps technology recognition in the case data. It avoids separate MGA
+types, regular-expression matching, and duplicated asset-classification logic.
+The selected edge determines the commodity and direction, so the same builder
+can represent industrial output, sector-coupling flows, fuel consumption, and
+carbon management.
 
-This separation keeps the solving process independent of the objective being
-explored. Budget enforcement and model restoration are implemented and tested
-once, while other MGA formulations can reuse the same engine.
+## Quantity construction
 
-By default, MGA writes the standard MacroEnergy outputs for every accepted
-alternative. Annual-generation totals are also recorded in
-`mga_group_values.csv`. `write_mga_capacity_outputs` is an optional compact
-writer for capacity studies that do not need operational outputs.
+`_mga_groups` dispatches to edge or storage construction according to the
+requested measure. Groups retain their input name, location, investment
+period, unit, contributing components, and JuMP expression. Transmission
+corridors are recognized as node-to-node edges and retain their direction.
 
-## Quantities and solve engine
+Annual activity applies representative-period weights. Cumulative activity
+also multiplies by the investment-period length. Storage energy capacity uses
+the storage vertex; storage charge and discharge power remain selectable on
+their edges.
 
-`MGAQuantityTerm` stores a model variable, its multiplier, and the information
-needed to identify it in the output files. `MGAQuantitySpec` combines these
-terms into one weighted sum:
+## Search and model reuse
 
-$$
-Q(x)=\sum_i a_i x_i.
-$$
+`run_mga` records the least-cost objective, adds one cost-budget constraint,
+and changes the objective for each alternative. One-at-a-time search brackets
+every group. Random search minimizes and maximizes each seeded signed direction.
+The original objective is restored and solved again even after an error.
 
-`MGAGroupSpec` is a lower-level option that selects model variables by matching
-their names. The GenX layer instead finds variables through MacroEnergy assets
-and edges, so it does not depend on JuMP variable names.
+Serial runs reuse the original model. Parallel runs create one JuMP clone per
+Julia worker and map the original cost and MGA expressions to each clone. Each
+worker processes several alternatives, avoiding one full model copy per solve.
+The optimizer must be supplied because `JuMP.copy_model` intentionally does
+not copy it. Full case outputs remain serial because the case stores references
+to variables in the original model.
 
-The engine starts from an already solved model. For each slack $\epsilon$, it
-adds
+`solver_threads` controls threads inside each solver instance. It is separate
+from `parallel_workers`, which controls the number of independent model clones.
 
-$$
-f(x) \le z^* + \epsilon |z^*|.
-$$
+## Ratios
 
-The constraint is rescaled internally to help the solver, without changing its
-meaning. After each alternative, the engine evaluates the original objective
-and checks the cost budget directly. The same model is reused for every
-direction and slack.
+`run_mga_ratio` combines selected groups into a numerator and denominator.
+Dinkelbach iterations solve a sequence of linear objectives of the form
+$N-qD$ and update $q=N/D$ until the residual is small. The implementation
+requires a positive denominator and conservatively checks that both quantities
+are built from nonnegative variables and coefficients.
 
-Before returning, even after an error, the engine removes the temporary budget,
-restores the original objective, and re-solves the baseline.
+## Output and scaling
 
-## Resource mapping
-
-`GenXMGAResourceSpec` identifies which MacroEnergy assets belong to each GenX
-resource group. An eligible edge must:
-
-1. belong to a selected asset type, when types are specified;
-2. match the optional asset and component patterns;
-3. carry the selected commodity; and
-4. be an asset-to-node output edge.
-
-Variables are grouped by technology, location, and investment period. The
-resulting groups are written to `mga_group_definitions.csv`.
-
-## Capacity and annual generation
-
-For resource group $r$, location $z$, and period $p$, capacity MGA uses
-
-$$
-P_{r,z,p}=\sum_{y\in Y(r,z,p)} C_y,
-$$
-
-where $C_y$ is available capacity rather than construction in that period.
-
-Annual-generation MGA uses
-
-$$
-G_{r,z,p}=\sum_{y\in Y(r,z,p)}\sum_t \omega_{y,t}F_{y,t},
-$$
-
-where $F_{y,t}$ is output flow and $\omega_{y,t}$ tells how often each
-representative time step occurs. MacroEnergy currently assumes one-hour time
-steps, so no separate duration multiplier is needed.
-
-## Directions and solve order
-
-For each iteration, `run_genx_mga` draws one random number between zero and one
-for each quantity. It maximizes and then minimizes that same set of numbers.
-Thus `N` iterations attempt `2N` alternatives for each slack.
-
-## Status and outputs
-
-The engine records the quantity definitions, search directions, run settings,
-solve summaries, and quantity values. Progress tables are updated after every
-attempted solve. Detailed output is written only for accepted solutions that
-pass the cost check.
-
-Accepted statuses are `OPTIMAL` and `ALMOST_OPTIMAL`. A time-limit result is
-recorded but is not accepted solely because the solver provides values.
-
-Focused tests cover cost budgets and restoration, paired directions,
-repeatable random numbers, capacity aggregation, weighted annual generation,
-resource matching, and max-then-min solve order.
+MacroEnergy may scale model quantities before optimization. MGA converts JuMP
+values back to the reporting scale and records the requested physical unit.
+Definition tables identify which model components contributed to every group;
+summary tables record status, cost-budget compliance, and objective values.

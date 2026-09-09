@@ -6,7 +6,9 @@
                 "transmission_edge": {
                     "unidirectional": false,
                     "has_capacity": true,
-                    "commodity": "Electricity"
+                    "commodity": "Electricity",
+                    "mga": true,
+                    "mga_group": "electric transmission"
                 }
             }
         },

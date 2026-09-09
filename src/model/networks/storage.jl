@@ -20,6 +20,8 @@ macro AbstractStorageBaseAttributes()
         max_duration::Float64 = $storage_defaults[:max_duration]
         max_new_capacity::Float64 = $storage_defaults[:max_new_capacity]
         max_storage_level::Vector{Float64} = $storage_defaults[:max_storage_level]
+        mga::Bool = $storage_defaults[:mga]
+        mga_group::Union{Missing,Symbol} = $storage_defaults[:mga_group]
         min_capacity::Float64 = $storage_defaults[:min_capacity]
         min_duration::Float64 = $storage_defaults[:min_duration]
         min_outflow_fraction::Float64 = $storage_defaults[:min_outflow_fraction]
@@ -178,6 +180,8 @@ max_capacity(g::AbstractStorage) = g.max_capacity;
 max_duration(g::AbstractStorage) = g.max_duration;
 max_new_capacity(g::AbstractStorage) = g.max_new_capacity;
 max_storage_level(g::AbstractStorage) = g.max_storage_level;
+mga(g::AbstractStorage) = g.mga;
+mga_group(g::AbstractStorage) = g.mga_group;
 function max_storage_level(g::AbstractStorage, t::Int64)
     a = max_storage_level(g)
     if isempty(a)

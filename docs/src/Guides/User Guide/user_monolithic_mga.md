@@ -1,147 +1,142 @@
-# GenX-equivalent monolithic MGA
+# Monolithic MGA
 
-Modeling to Generate Alternatives (MGA) searches for different solutions near
-the least-cost solution. For baseline cost $z^*$ and cost slack $\epsilon$,
-MacroEnergy requires
+Modeling to Generate Alternatives (MGA) finds different system designs whose
+cost remains near the least-cost result. If the least-cost objective is $z^*$
+and the allowed cost increase is $\epsilon$, MGA imposes
 
 $$
 f(x) \le z^* + \epsilon |z^*|.
 $$
 
-It then replaces the cost objective with a capacity or annual-generation
-objective while keeping the original model constraints.
+The case must use the monolithic solution algorithm and perfect foresight.
 
-## Requirements
+## Select model components
 
-The case settings must use:
+Add the following fields to any edge that should participate:
 
 ```json
-"SolutionAlgorithm": "Monolithic",
-"ExpansionHorizon": "PerfectForesight"
+"mga": true,
+"mga_group": "electrolytic hydrogen"
 ```
 
-Two measures are available:
+Use the same fields inside a storage block to select storage energy capacity.
+Unmarked components are excluded. Group names should describe the pathway
+quantity represented by the selected edge or storage component.
 
-- `measure=:capacity`
-- `measure=:annual_generation`
+## Supported measures
 
-## Define resource groups
+`run_mga` supports:
 
-GenX defines MGA eligibility in its resource tables. MacroEnergy instead uses
-`GenXMGAResourceSpec` to map model assets into technology groups:
+| Measure | Quantity |
+| --- | --- |
+| `:capacity` | Available edge capacity |
+| `:new_capacity` | Capacity built in the period |
+| `:retired_capacity` | Capacity retired in the period |
+| `:retrofitted_capacity` | Capacity converted through a retrofit |
+| `:annual_activity` | Representative-time-weighted flow |
+| `:cumulative_activity` | Weighted flow multiplied by the period length |
+| `:storage_energy_capacity` | Available storage energy capacity |
+| `:new_storage_energy_capacity` | Storage energy capacity built in the period |
+| `:retired_storage_energy_capacity` | Storage energy capacity retired in the period |
+| `:corridor_capacity` | Available capacity between two network nodes |
+| `:new_corridor_capacity` | Corridor capacity built in the period |
+| `:retired_corridor_capacity` | Corridor capacity retired in the period |
+| `:annual_net_transfer` | Signed weighted flow along a corridor |
+| `:cumulative_net_transfer` | Signed corridor flow multiplied by period length |
 
-```julia
-resources = [
-    GenXMGAResourceSpec(
-        "solar",
-        :Electricity;
-        asset_types=["VRE"],
-        asset_pattern=r"solar",
-        location_pattern=r"(Region\d+[A-Za-z]+)",
-        capacity_unit="MW",
-        activity_unit="MWh",
-    ),
-    GenXMGAResourceSpec(
-        "onshore wind",
-        :Electricity;
-        asset_types=["VRE"],
-        asset_pattern=r"onshore_wind",
-        location_pattern=r"(Region\d+[A-Za-z]+)",
-        capacity_unit="MW",
-        activity_unit="MWh",
-    ),
-]
-```
-
-Each specification gives the reported technology name and output commodity.
-The optional asset type and regular-expression fields narrow the eligible
-assets. The first capture group in `location_pattern` is used as the location
-label. If the pattern is omitted, MacroEnergy uses the asset location or the
-receiving node ID.
-
-The builder reports an error when a specification matches no output edges. The
-resolved variables and their technology, location, commodity, and period are
-written to `mga_group_definitions.csv`.
+The activity measures work with any commodity. Selecting the appropriate edge
+therefore covers electricity generation, industrial production, hydrogen
+production, fuel use, emissions, carbon capture, and carbon injection without
+separate MGA-specific asset types.
 
 ## Run MGA
 
-Load and solve the case before calling MGA:
+Solve the least-cost model first, then call `run_mga`:
 
 ```julia
 using MacroEnergy
 using Gurobi
 
-case_path = "/path/to/case"
-case = load_case(case_path)
-
-optimizer = MacroEnergy.create_optimizer(
+case = load_case("/path/to/case")
+optimizer = create_optimizer(
     Gurobi.Optimizer,
     nothing,
-    ("Method" => 1,),
+    ("Method" => 2,),
 )
 case, model = solve_case(case, optimizer)
 
-mga = run_genx_mga(
+result = run_mga(
     model,
     case,
-    joinpath(case_path, "mga_results");
-    resources=resources,
-    measure=:capacity,
+    "/path/to/results";
+    measure=:annual_activity,
+    unit="Mt/year",
+    include_groups=["electrolytic hydrogen", "blue hydrogen"],
     slacks=[0.01, 0.05, 0.10],
-    iterations=10,
-    random_seed=42,
 )
 ```
 
-Capacity MGA sums the available capacity for each technology, location, and
-investment period. Available capacity is the stock usable in that period, not
-necessarily capacity built during that period.
+`unit` must match the case data. MGA cannot infer a physical unit from a
+numerical value.
 
-For annual-generation MGA, change the measure:
+The default `search=:one_at_a_time` minimizes and maximizes each
+technology-location-period group. Use `search=:random` with `iterations` and
+`random_seed` to explore paired signed random directions.
+
+## Parallel alternatives
+
+Independent alternatives can run on cloned JuMP models:
 
 ```julia
-measure=:annual_generation
+result = run_mga(
+    model,
+    case,
+    "/path/to/results";
+    measure=:capacity,
+    unit="MW",
+    parallel_workers=4,
+    optimizer=optimizer,
+    solver_threads=2,
+    write_detailed_results=false,
+)
 ```
 
-Annual generation is the representative-time-weighted output flow for each
-technology, location, and investment period. MacroEnergy uses the case's
-subperiod occurrence weights.
+Start Julia with at least the requested number of threads, for example
+`julia --threads=4`. Each worker owns a model clone and may give its solver
+`solver_threads` internal threads. For a serial run, set the thread count when
+creating the optimizer. Avoid requesting more total cores than
+`parallel_workers * solver_threads`.
 
-## Search behavior
+Parallel mode writes MGA summary tables but not full MacroEnergy case outputs,
+because the case object refers to variables in the original model. Rerun
+selected alternatives serially when full outputs are needed.
 
-Each iteration draws one positive random coefficient for every
-technology-location-period quantity. The same coefficient vector is first
-maximized and then minimized. Therefore, `iterations=N` attempts `2N`
-alternatives for each cost slack. Set `random_seed` to reproduce the directions.
+## Ratios and shares
 
-The model is reused across solves. When the run finishes, MacroEnergy removes
-the MGA budget, restores the original cost objective, and re-solves it.
+`run_mga_ratio` finds the minimum and maximum of a ratio using Dinkelbach
+iterations. A share includes the numerator group in the denominator:
+
+```julia
+result = run_mga_ratio(
+    model,
+    case,
+    "/path/to/results";
+    name="solar share of wind and solar",
+    numerator_groups=["solar"],
+    denominator_groups=["solar", "onshore wind"],
+    measure=:capacity,
+    unit="MW",
+    slacks=[0.01, 0.05],
+)
+```
+
+The numerator and denominator must use nonnegative quantities with the same
+unit. Signed net-transfer quantities are therefore unsuitable for ratios.
 
 ## Outputs
 
-Results are written under the `mga/` directory inside the requested output
-path:
-
-```text
-mga/
-├── mga_metadata.json
-├── mga_group_definitions.csv
-├── mga_directions.csv
-├── mga_summary.csv
-├── mga_group_values.csv
-└── slack_001_0.0100/
-    ├── 001_random_01_max/
-    └── 002_random_01_min/
-```
-
-- `mga_metadata.json` records the baseline, slacks, seed, and tolerances.
-- `mga_group_definitions.csv` records the variables in each quantity.
-- `mga_directions.csv` records the random coefficient vectors.
-- `mga_summary.csv` records solve status, system cost, and budget checks.
-- `mga_group_values.csv` records each quantity in every accepted solution.
-
-Use `write_detailed_results=false` to write only the audit tables. For compact
-capacity results, use `detailed_output_writer=write_mga_capacity_outputs`.
-
-MacroEnergy accepts `OPTIMAL` and `ALMOST_OPTIMAL` solutions with finite values
-that pass an independent check against the original cost budget.
+`run_mga` writes definitions, directions, solve summaries, and group values in
+the `mga/` directory. `run_mga_ratio` writes the corresponding definition,
+summary, and iteration tables in `mga_ratio/`. Serial runs write normal
+MacroEnergy result folders by default. Set `write_detailed_results=false` to
+write only the MGA tables.
