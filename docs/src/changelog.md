@@ -62,8 +62,6 @@ and this project follows Julia package versioning through `Project.toml` release
 - `StorageChargeLimitConstraint` is now attached to a `Battery`'s charge edge. Before, it was declared as a top-level key in the charge edge's default data instead of inside its `constraints` dictionary, so it was silently dropped.
 - Dual exports now handle unavailable solver duals safely, recording `NaN` instead of failing while preserving `Float64` output arrays.
 - CSV input reading now releases file handles deterministically to allow immediate rewriting and deletion on Windows. JSON reads/writes and CSV header reads also close streams after exceptions.
-- Fix wacc default preventing fallback to DiscountRate. Omitted `wacc` was silently treated as `0.0` instead of falling back to the case-level `DiscountRate`.
-- Duplicate asset IDs within a system are now rejected during system generation, preventing ambiguous myopic capacity carry-over and late wide-output failures.
 
 ### Documentation
 
